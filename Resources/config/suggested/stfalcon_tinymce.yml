@@ -17,7 +17,7 @@ stfalcon_tinymce:
         simple:
             theme: 'modern'
             menubar: false
-            toolbar1: 'bold italic underline | ressourceLinker | alignleft aligncenter alignright alignjustify | fullscreenToggle'
+            toolbar1: 'bold italic underline | ressourceLinker | alignleft aligncenter alignright alignjustify '
         medium:
             theme: 'modern'
             plugins:
