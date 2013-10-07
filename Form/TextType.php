@@ -15,7 +15,7 @@ class TextType extends AbstractType
         $builder->add(
             'text',
             'textarea',
-            array('required' => false, 'attr' => array ('class' => 'tinymce', 'data-theme' => 'simple')
+            array('required' => false, 'attr' => array ('class' => 'tinymce', 'data-theme' => 'advanced')
             )
         );
     }
