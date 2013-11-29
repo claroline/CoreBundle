@@ -40,17 +40,6 @@ class ClarolineCoreBundle extends InstallableBundle implements AutoConfigurableI
         $bundleClass = get_class($bundle);
         $config = new ConfigurationBuilder();
 
-        // no special configuration, work in any environment
-        $emptyConfigs = array(
-            'Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle',
-            'Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle',
-            'FOS\JsRoutingBundle\FOSJsRoutingBundle',
-            'JMS\AopBundle\JMSAopBundle',
-            'JMS\TwigJsBundle\JMSTwigJsBundle',
-            'WhiteOctober\PagerfantaBundle\WhiteOctoberPagerfantaBundle',
-            'Claroline\MigrationBundle\ClarolineMigrationBundle',
-            'Claroline\Bundle\FrontEndBundle\FrontEndBundle'
-        );
         // simple container configuration, same for every environment
         $simpleConfigs = array(
             'Symfony\Bundle\SecurityBundle\SecurityBundle'               => 'security',
@@ -66,15 +55,13 @@ class ClarolineCoreBundle extends InstallableBundle implements AutoConfigurableI
         );
         // one configuration file for every standard environment (prod, dev, test)
         $envConfigs = array(
-            'Symfony\Bundle\FrameworkBundle\FrameworkBundle'        => 'framework',
+            'Symfony\Bundle\FrameworkBundle\FrameworkBundle'     => 'framework',
             'Symfony\Bundle\MonologBundle\MonologBundle'         => 'monolog',
             'Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle' => 'swiftmailer',
             'Doctrine\Bundle\DoctrineBundle\DoctrineBundle'      => 'doctrine'
         );
 
-        if (in_array($bundleClass, $emptyConfigs)) {
-            return $config;
-        } elseif (isset($simpleConfigs[$bundleClass])) {
+        if (isset($simpleConfigs[$bundleClass])) {
             return $config->addContainerResource($this->buildPath($simpleConfigs[$bundleClass]));
         } elseif (isset($envConfigs[$bundleClass])) {
             if (in_array($environment, array('prod', 'dev', 'test'))) {
@@ -92,7 +79,7 @@ class ClarolineCoreBundle extends InstallableBundle implements AutoConfigurableI
             }
         }
 
-        return false;
+        return $config;
     }
 
     public function getRequiredFixturesDirectory($environment)
