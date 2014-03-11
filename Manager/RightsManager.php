@@ -92,14 +92,14 @@ class RightsManager
     public function create(
         $permissions,
         Role $role,
-        ResourceNode $resource,
+        ResourceNode $node,
         $isRecursive,
         array $creations = array()
     )
     {
         $isRecursive ?
-            $this->recursiveCreation($permissions, $role, $resource, $creations) :
-            $this->nonRecursiveCreation($permissions, $role, $resource, $creations);
+            $this->recursiveCreation($permissions, $role, $node, $creations) :
+            $this->nonRecursiveCreation($permissions, $role, $node, $creations);
     }
 
     /**
@@ -401,9 +401,9 @@ class RightsManager
      *
      * @return \Claroline\CoreBundle\Resource\ResourceRights[]ù
      */
-    public function getNonAdminRights(ResourceNode $node)
+    public function getConfigurableRights(ResourceNode $node)
     {
-        return $this->rightsRepo->findNonAdminRights($node);
+        return $this->rightsRepo->findConfigurableRights($node);
     }
 
     /**
