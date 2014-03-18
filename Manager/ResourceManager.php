@@ -141,7 +141,7 @@ class ResourceManager
         $node->setMimeType($mimeType);
         $node->setName($resource->getName());
         $name = $this->getUniqueName($node, $parent);
-
+        
         $previous = $parent === null ?
             null:
             $this->resourceNodeRepo->findOneBy(array('parent' => $parent, 'next' => null));
@@ -156,6 +156,9 @@ class ResourceManager
         $node->setName($name);
         $node->setPrevious($previous);
         $node->setClass(get_class($resource));
+        
+        $node->setHashName($this->ut->generateGuid());
+        
         $resource->setResourceNode($node);
         $this->setRights($node, $parent, $rights);
         $this->om->persist($node);
