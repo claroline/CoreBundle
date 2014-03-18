@@ -216,6 +216,11 @@ claro_file:
     resource: "@ClarolineCoreBundle/Controller/FileController.php"
     type: annotation
     prefix: file
+    
+claro_sync:
+    resource: "@ClarolineOfflineBundle/Controller/OfflineController.php"
+    type: annotation
+    
 
 # Badge routes
 claro_badge_admin:

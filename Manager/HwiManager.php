@@ -61,9 +61,16 @@ class HwiManager
         curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl_handle, CURLOPT_USERAGENT, 'ClarolineConnect');
         $json = curl_exec($curl_handle);
+        
+        
         curl_close($curl_handle);
+        
+        if (!$json) {
+            return array('error' => 'facebook_application_validation');
+        }
         $data = json_decode($json);
 
+        
         if (array_key_exists('error', $data)) {
             return array('error' => 'facebook_application_validation_error');
         }

@@ -262,6 +262,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * @ORM\Column(name="last_uri", length=255, nullable=true)
      */
     protected $lastUri;
+    
 
     public function __construct()
     {
