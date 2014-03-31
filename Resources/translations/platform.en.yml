@@ -534,6 +534,7 @@ role_name_type_form_translationKey: Name
 roles: Roles
 roles_management: 'Roles management'
 save: Save
+save_and_add_user: 'Save and add another user'
 save_as_template: 'Save as template'
 save_workspace_as_template: 'Save workspace as template'
 search: Search

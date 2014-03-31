@@ -28,6 +28,20 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+
+// Controller dependencies
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Translation\TranslatorInterface;
+use Innova\PathBundle\Manager\PathManager;
+use Innova\PathBundle\Manager\PublishmentManager;
+use Claroline\CoreBundle\Entity\Workspace\AbstractWorkspace;
+use Innova\PathBundle\Entity\Path\Path;
+use Doctrine\ORM\EntityManager;
+
 /**
  * @DI\Tag("security.secure_service")
  * @SEC\PreAuthorize("hasRole('ADMIN')")
@@ -44,6 +58,9 @@ class UsersController extends Controller
     private $localeManager;
     private $router;
 
+    protected $entityManager;
+    protected $translator;
+
     /**
      * @DI\InjectParams({
      *     "userManager"        = @DI\Inject("claroline.manager.user_manager"),
@@ -54,7 +71,9 @@ class UsersController extends Controller
      *     "request"            = @DI\Inject("request"),
      *     "mailManager"        = @DI\Inject("claroline.manager.mail_manager"),
      *     "localeManager"      = @DI\Inject("claroline.common.locale_manager"),
-     *     "router"             = @DI\Inject("router")
+     *     "router"             = @DI\Inject("router"),
+     *     "entityManager"      = @DI\Inject("doctrine.orm.entity_manager"),
+     *     "translator"         = @DI\Inject("translator")
      * })
      */
     public function __construct(
@@ -66,7 +85,9 @@ class UsersController extends Controller
         Request $request,
         MailManager $mailManager,
         LocaleManager $localeManager,
-        RouterInterface $router
+        RouterInterface $router,
+        EntityManager $entityManager,
+        $translator
     )
     {
         $this->userManager = $userManager;
@@ -78,6 +99,9 @@ class UsersController extends Controller
         $this->localeManager = $localeManager;
         $this->router = $router;
         $this->workspaceManager = $workspaceManager;
+
+        $this->entityManager = $entityManager;
+        $this->translator = $translator;
     }
 
     /**
@@ -137,6 +161,7 @@ class UsersController extends Controller
      */
     public function createAction(User $currentUser)
     {
+
         $roles = $this->roleManager->getPlatformRoles($currentUser);
         $form = $this->formFactory->create(
             FormFactory::TYPE_USER_FULL, array($roles, $this->localeManager->getAvailableLocales())
@@ -144,11 +169,28 @@ class UsersController extends Controller
         $form->handleRequest($this->request);
 
         if ($form->isValid()) {
+
             $user = $form->getData();
             $newRoles = $form->get('platformRoles')->getData();
             $this->userManager->insertUserWithRoles($user, $newRoles);
 
-            return $this->redirect($this->generateUrl('claro_admin_user_list'));
+            // 2 boutons de validation pour ce formulaire donc je teste le "Clic" sur le bouton "Enregistrez et ..." ERV.
+            if ($this->getRequest()->request->get('submitAction') == 'enregistrer')
+            {
+                // Redirection vers la liste des utilisateurs.
+                return $this->redirect($this->generateUrl('claro_admin_user_list'));
+            }
+
+            elseif ($this->getRequest()->request->get('submitAction') == 'modifier')
+            {
+                // Affichage du message "utilisateur(s) ajouté(s)"
+                $this->get('session')->getFlashBag()->set(
+                    'success',
+                        $this->translator->trans("add_user_s_confirm_message", array(), "platform")
+                );
+                // Redirection vers le formulaire de création de l'utilisateur.
+                return $this->redirect($this->generateUrl('claro_admin_create_user'));
+            }
         }
 
         $error = null;
@@ -157,6 +199,7 @@ class UsersController extends Controller
             $error = 'mail_not_available';
         }
 
+        die();
         return array(
             'form_complete_user' => $form->createView(),
             'error' => $error

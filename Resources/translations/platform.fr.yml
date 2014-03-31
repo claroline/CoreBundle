@@ -533,6 +533,7 @@ role_name_type_form_translationKey: Nom
 roles: Rôles
 roles_management: 'Gestion des rôles'
 save: Sauvegarder
+save_and_add_user: 'Enregistrez et ajoutez un utilisateur'
 save_as_template: 'Sauvegarder comme modèle'
 save_workspace_as_template: 'Sauvegarde de l''espace d''activités comme modèle'
 search: Rechercher
