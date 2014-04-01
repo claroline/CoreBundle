@@ -199,7 +199,6 @@ class UsersController extends Controller
             $error = 'mail_not_available';
         }
 
-        die();
         return array(
             'form_complete_user' => $form->createView(),
             'error' => $error
