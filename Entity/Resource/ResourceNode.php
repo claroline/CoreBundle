@@ -537,7 +537,7 @@ class ResourceNode
      *
      * @return string
      */
-    public function getHashName()
+    public function getNodeHashName()
     {
         return $this->hashName;
     }
@@ -549,7 +549,7 @@ class ResourceNode
      *
      * @param string $hashName
      */
-    public function setHashName($hashName)
+    public function setNodeHashName($hashName)
     {
         $this->hashName = $hashName;
     }
