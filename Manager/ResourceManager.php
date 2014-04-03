@@ -126,7 +126,8 @@ class ResourceManager
         AbstractWorkspace $workspace,
         ResourceNode $parent = null,
         ResourceIcon $icon = null,
-        array $rights = array()
+        array $rights = array(),
+        $nodeHashName = null
     )
     {
         $this->om->startFlushSuite();
@@ -157,7 +158,10 @@ class ResourceManager
         $node->setPrevious($previous);
         $node->setClass(get_class($resource));
         
-        $node->setHashName($this->ut->generateGuid());
+        if($nodeHashName == null){
+            $nodeHashName = $this->ut->generateGuid();
+        }
+        $node->setNodeHashName($nodeHashName);
         
         $resource->setResourceNode($node);
         $this->setRights($node, $parent, $rights);
