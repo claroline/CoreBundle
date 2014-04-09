@@ -106,7 +106,7 @@ class UsersController extends Controller
      */
     public function userCreationFormAction(User $currentUser)
     {
-        $roles = $this->roleManager->getPlatformRoles($currentUser);
+        $roles = $this->roleManager->getDefaultPlatformRoles($currentUser);
         $form = $this->formFactory->create(
             FormFactory::TYPE_USER_FULL, array($roles, $this->localeManager->getAvailableLocales())
         );
@@ -137,7 +137,7 @@ class UsersController extends Controller
      */
     public function createAction(User $currentUser)
     {
-        $roles = $this->roleManager->getPlatformRoles($currentUser);
+        $roles = $this->roleManager->getDefaultPlatformRoles();
         $form = $this->formFactory->create(
             FormFactory::TYPE_USER_FULL, array($roles, $this->localeManager->getAvailableLocales())
         );
@@ -227,7 +227,7 @@ class UsersController extends Controller
         $pager = $search === '' ?
             $this->userManager->getAllUsers($page, $max, $order, $direction):
             $this->userManager->getUsersByName($search, $page, $max, $order, $direction);
-        
+
         $direction = $direction === 'DESC' ? 'ASC' : 'DESC';
 
         return array('pager' => $pager, 'search' => $search, 'max' => $max, 'order' => $order, 'direction' => $direction);

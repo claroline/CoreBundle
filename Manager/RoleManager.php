@@ -643,4 +643,12 @@ class RoleManager
         $sender = $this->container->get('security.context')->getToken()->getUser();
         $this->messageManager->sendMessageToAbstractRoleSubject($ars, $content, $object, $sender);
     }
+
+    /**
+     * @return \Claroline\CoreBundle\Entity\Role[]
+     */
+    public function getDefaultPlatformRoles()
+    {
+        return $this->roleRepo->findDefaultPlatformRoles();
+    }
 }

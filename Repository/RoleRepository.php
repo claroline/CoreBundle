@@ -94,6 +94,21 @@ class RoleRepository extends EntityRepository
     }
 
     /**
+     * Returns the default platform roles.
+     *
+     * @return array[Role]
+     */
+    public function findDefaultPlatformRoles()
+    {
+        $dql = "
+            SELECT r FROM Claroline\CoreBundle\Entity\Role r
+            WHERE r.name = 'ROLE_USER' AND r.type = " . Role::PLATFORM_ROLE;
+        $query = $this->_em->createQuery($dql);
+
+        return $query->getResult();
+    }
+
+    /**
      * Returns all platform roles.
      *
      * @return array[Role]
