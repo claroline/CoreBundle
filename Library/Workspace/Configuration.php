@@ -38,6 +38,7 @@ class Configuration
     private $toolsConfig;
     private $permsRootConfig;
     private $templateFile;
+    private $guid = NULL;
 
     public function __construct($template, $full = true)
     {
@@ -233,5 +234,15 @@ class Configuration
     public function getSelfUnregistration()
     {
         return $this->selfUnregistration;
+    }
+
+    public function getGuid()
+    {
+        return $this->guid;
+    }
+
+    public function setGuid($guid)
+    {
+        $this->guid = $guid;
     }
 }

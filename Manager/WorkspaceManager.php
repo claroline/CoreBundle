@@ -168,7 +168,12 @@ class WorkspaceManager
         $workspace->setName($config->getWorkspaceName());
         $workspace->setPublic($config->isPublic());
         $workspace->setCode($config->getWorkspaceCode());
-        $workspace->setGuid($this->ut->generateGuid());
+        if($config->getGuid() != NULL)
+        {
+            $workspace->setGuid($config->getGuid());
+        }else{
+            $workspace->setGuid($this->ut->generateGuid());   
+        }
         $workspace->setDisplayable($config->isDisplayable());
         $workspace->setSelfRegistration($config->getSelfRegistration());
         $workspace->setSelfUnregistration($config->getSelfUnregistration());
