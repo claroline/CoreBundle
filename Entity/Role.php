@@ -20,6 +20,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Claroline\CoreBundle\Library\Security\PlatformRoles;
 use Claroline\CoreBundle\Entity\Resource\ResourceRights;
 use Claroline\CoreBundle\Entity\Workspace\AbstractWorkspace;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity(repositoryClass="Claroline\CoreBundle\Repository\RoleRepository")
@@ -237,4 +238,5 @@ class Role implements RoleInterface
     {
         return array('ROLE_WS_COLLABORATOR', 'ROLE_WS_MANAGER', 'ROLE_WS_VISITOR');
     }
+
 }
