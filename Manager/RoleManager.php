@@ -18,6 +18,7 @@ use Claroline\CoreBundle\Entity\Workspace\AbstractWorkspace;
 use Claroline\CoreBundle\Entity\Tool\Tool;
 use Claroline\CoreBundle\Manager\Exception\LastManagerDeleteException;
 use Claroline\CoreBundle\Manager\Exception\RoleReadOnlyException;
+use Claroline\CoreBundle\Manager\RoleCreationManager;
 use Claroline\CoreBundle\Repository\RoleRepository;
 use Claroline\CoreBundle\Repository\UserRepository;
 use Claroline\CoreBundle\Repository\GroupRepository;
@@ -39,6 +40,7 @@ class RoleManager
     private $userRepo;
     /** @var GroupRepository */
     private $groupRepo;
+    private $roleCreationManager;
     private $dispatcher;
     private $om;
 
@@ -48,16 +50,23 @@ class RoleManager
      * @DI\InjectParams({
      *     "roleRepo"   = @DI\Inject("role_repository"),
      *     "om"         = @DI\Inject("claroline.persistence.object_manager"),
-     *     "dispatcher" = @DI\Inject("claroline.event.event_dispatcher")
+     *     "dispatcher" = @DI\Inject("claroline.event.event_dispatcher"),
+     *     "roleCreationManager" = @DI\Inject("claroline.manager.role_creation_manager")
      * })
      */
-    public function __construct(ObjectManager $om, StrictDispatcher $dispatcher)
+    public function __construct
+    (
+        ObjectManager $om,
+        StrictDispatcher $dispatcher,
+        RoleCreationManager $roleCreationManager
+    )
     {
         $this->roleRepo = $om->getRepository('ClarolineCoreBundle:Role');
         $this->userRepo = $om->getRepository('ClarolineCoreBundle:User');
         $this->groupRepo = $om->getRepository('ClarolineCoreBundle:Group');
         $this->om = $om;
         $this->dispatcher = $dispatcher;
+        $this->roleCreationManager = $roleCreationManager;
     }
 
     /**
@@ -157,8 +166,9 @@ class RoleManager
     {
         if (!$ars->hasRole($role->getName())) {
             $ars->addRole($role);
-            $this->om->startFlushSuite();
+            $this->roleCreationManager->createRoleCreation($role);
 
+            $this->om->startFlushSuite();
             $this->dispatcher->dispatch(
                 'log',
                 'Log\LogRoleSubscribe',
