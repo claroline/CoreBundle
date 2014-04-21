@@ -179,7 +179,8 @@ class WorkspaceManager
         $workspace->setSelfUnregistration($config->getSelfUnregistration());
         $baseRoles = $this->roleManager->initWorkspaceBaseRole($config->getRoles(), $workspace);
         $baseRoles['ROLE_ANONYMOUS'] = $this->roleRepo->findOneBy(array('name' => 'ROLE_ANONYMOUS'));
-        $this->roleManager->associateRole($manager, $baseRoles["ROLE_WS_MANAGER"]);
+        //$this->roleManager->associateRole($manager, $baseRoles["ROLE_WS_MANAGER"]);
+        $this->roleManager->associateUserRole($manager, $baseRoles["ROLE_WS_MANAGER"]);
         $dir = $this->om->factory('Claroline\CoreBundle\Entity\Resource\Directory');
         $dir->setName($workspace->getName());
         $rights = $config->getPermsRootConfiguration();
@@ -782,7 +783,8 @@ class WorkspaceManager
         $userRoles = $this->roleManager->getWorkspaceRolesForUser($user, $workspace);
 
         if (count($userRoles) === 0) {
-            $this->roleManager->associateRole($user, $role);
+            //$this->roleManager->associateRole($user, $role);
+            $this->roleManager->associateUserRole($user, $role);
             $this->dispatcher->dispatch(
                 'log',
                 'Log\LogRoleSubscribe',

@@ -11,19 +11,22 @@
 
 namespace Claroline\CoreBundle\Manager;
 
+use Claroline\CoreBundle\Entity\User;
 use Claroline\CoreBundle\Entity\Role;
 use Claroline\CoreBundle\Entity\UserRoleCreation;
 use Claroline\CoreBundle\Persistence\ObjectManager;
 use Claroline\CoreBundle\Library\Utilities\ClaroUtilities;
+use Claroline\CoreBundle\Repository\UserRepository;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * @DI\Service("claroline.manager.role_creation_manager")
+ * @DI\Service("claroline.manager.user_role_creation_manager")
  */
-class RoleCreationManager
+class UserRoleCreationManager
 {
     private $om;
     private $ut;
+    private $userRepo;
     
     /**
      * Constructor.
@@ -40,18 +43,23 @@ class RoleCreationManager
     {
         $this->om = $om;
         $this->ut = $ut;
+        $this->userRepo = $om->getRepository('ClarolineCoreBundle:User');
     }
 
-    public function createRoleCreation(Role $role)
+    //public function createUserRoleCreation(AbstractRoleSubject $ars, Role $role)
+    public function createUserRoleCreation(User $user, Role $role)
     {
+        //$users = $this->userRepo->findByRoles($roles);
+        //Lequel User est le notre parmis les users !!! ????
+        //Le ARS est un probleme !!!
         $this->om->startFlushSuite();
+        $userRoleCreation = new UserRoleCreation($user, $role);
         
-        $roleCreation = new UserRoleCreation($role);
-        
-        $this->om->persist($roleCreation);
+        $this->om->persist($userRoleCreation);
         $this->om->endFlushSuite();
 
-        return $roleCreation;
+        return $userRoleCreation;
     }
 
+    //public function removeRoleCreation(User $user, Role $role)
 }

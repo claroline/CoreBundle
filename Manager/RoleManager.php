@@ -40,7 +40,7 @@ class RoleManager
     private $userRepo;
     /** @var GroupRepository */
     private $groupRepo;
-    private $roleCreationManager;
+    private $userRoleCreationManager;
     private $dispatcher;
     private $om;
 
@@ -51,14 +51,14 @@ class RoleManager
      *     "roleRepo"   = @DI\Inject("role_repository"),
      *     "om"         = @DI\Inject("claroline.persistence.object_manager"),
      *     "dispatcher" = @DI\Inject("claroline.event.event_dispatcher"),
-     *     "roleCreationManager" = @DI\Inject("claroline.manager.role_creation_manager")
+     *     "userRoleCreationManager" = @DI\Inject("claroline.manager.user_role_creation_manager")
      * })
      */
     public function __construct
     (
         ObjectManager $om,
         StrictDispatcher $dispatcher,
-        RoleCreationManager $roleCreationManager
+        UserRoleCreationManager $userRoleCreationManager
     )
     {
         $this->roleRepo = $om->getRepository('ClarolineCoreBundle:Role');
@@ -66,7 +66,7 @@ class RoleManager
         $this->groupRepo = $om->getRepository('ClarolineCoreBundle:Group');
         $this->om = $om;
         $this->dispatcher = $dispatcher;
-        $this->roleCreationManager = $roleCreationManager;
+        $this->userRoleCreationManager = $userRoleCreationManager;
     }
 
     /**
@@ -166,8 +166,7 @@ class RoleManager
     {
         if (!$ars->hasRole($role->getName())) {
             $ars->addRole($role);
-            $this->roleCreationManager->createRoleCreation($role);
-
+            //Creer le user role creation
             $this->om->startFlushSuite();
             $this->dispatcher->dispatch(
                 'log',
@@ -175,6 +174,27 @@ class RoleManager
                 array($role, $ars)
             );
             $this->om->persist($ars);
+            $this->om->endFlushSuite();
+        }
+    }
+
+    /**
+     * @param \Claroline\CoreBundle\Entity\User $user
+     * @param \Claroline\CoreBundle\Entity\Role $role
+     */
+    public function associateUserRole(User $user, Role $role)
+    {
+        if (!$user->hasRole($role->getName())) {
+            $user->addRole($role);
+            $this->userRoleCreationManager->createUserRoleCreation($user, $role);
+
+            $this->om->startFlushSuite();
+            $this->dispatcher->dispatch(
+                'log',
+                'Log\LogRoleSubscribe',
+                array($role, $user)
+            );
+            $this->om->persist($user);
             $this->om->endFlushSuite();
         }
     }

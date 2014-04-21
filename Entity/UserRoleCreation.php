@@ -8,11 +8,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Claroline\CoreBundle\Entity\AbstractRoleSubject;
 use Claroline\CoreBundle\Entity\User;
+use Claroline\CoreBundle\Entity\Role;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity(repositoryClass="Claroline\CoreBundle\Repository\RoleCreationRepository")
- * @ORM\Table(name="claro_role_creation")
+ * @ORM\Table(name="claro_user_role_creation")
  */
 class UserRoleCreation
 {
@@ -26,12 +27,21 @@ class UserRoleCreation
      /**
      *
      * @ORM\ManyToOne(
-     *     targetEntity="Claroline\CoreBundle\Entity\Role",
-     *     fetch="EXTRA_LAZY"
+     *     targetEntity="Claroline\CoreBundle\Entity\Role"
      * )
-     * @ORM\JoinTable(name="claro_user_role_creation")
+     * @ORM\JoinColumn(nullable=false)
      */
     protected $userRole;
+
+    /**
+     *
+     * @ORM\OneToOne(
+        targetEntity="Claroline\CoreBundle\Entity\User",
+        cascade={"persist"}
+       )
+     * @ORM\JoinColumn(nullable=false, unique=true)
+     */
+    protected $user;
 
     /**
      * @var \DateTime
@@ -41,8 +51,9 @@ class UserRoleCreation
      */
     protected $creationDate;
 
-    public function __construct($role)
+    public function __construct($user, $role)
     {
+        $this->user = $user;
         $this->userRole = $role;
     }
     
@@ -54,9 +65,22 @@ class UserRoleCreation
         return $this->id;
     }
     
-    public function getuserRole()
+    /**
+    *   @return User
+    */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    public function getUserRole()
     {
         return $this->userRole;
+    }
+
+    public function setUserRole($role)
+    {
+        $this->userRole = $role;
     }
 
     /**

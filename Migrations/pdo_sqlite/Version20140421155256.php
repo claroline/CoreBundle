@@ -8,29 +8,33 @@ use Doctrine\DBAL\Schema\Schema;
 /**
  * Auto-generated migration based on mapping information: modify it with caution
  *
- * Generation date: 2014/04/21 02:11:31
+ * Generation date: 2014/04/21 03:53:01
  */
-class Version20140421141125 extends AbstractMigration
+class Version20140421155256 extends AbstractMigration
 {
     public function up(Schema $schema)
     {
         $this->addSql("
-            CREATE TABLE claro_role_creation (
+            CREATE TABLE claro_user_role_creation (
                 id INTEGER NOT NULL, 
+                user_id INTEGER NOT NULL, 
                 creation_date DATETIME NOT NULL, 
-                userRole_id INTEGER DEFAULT NULL, 
+                userRole_id INTEGER NOT NULL, 
                 PRIMARY KEY(id)
             )
         ");
         $this->addSql("
-            CREATE INDEX IDX_5005B24585DFE78E ON claro_role_creation (userRole_id)
+            CREATE INDEX IDX_709FE2E85DFE78E ON claro_user_role_creation (userRole_id)
+        ");
+        $this->addSql("
+            CREATE UNIQUE INDEX UNIQ_709FE2EA76ED395 ON claro_user_role_creation (user_id)
         ");
     }
 
     public function down(Schema $schema)
     {
         $this->addSql("
-            DROP TABLE claro_role_creation
+            DROP TABLE claro_user_role_creation
         ");
     }
 }
