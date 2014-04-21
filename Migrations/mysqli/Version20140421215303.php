@@ -1,6 +1,6 @@
 <?php
 
-namespace Claroline\CoreBundle\Migrations\drizzle_pdo_mysql;
+namespace Claroline\CoreBundle\Migrations\mysqli;
 
 use Doctrine\DBAL\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
@@ -8,9 +8,9 @@ use Doctrine\DBAL\Schema\Schema;
 /**
  * Auto-generated migration based on mapping information: modify it with caution
  *
- * Generation date: 2014/04/21 03:53:02
+ * Generation date: 2014/04/21 09:53:09
  */
-class Version20140421155256 extends AbstractMigration
+class Version20140421215303 extends AbstractMigration
 {
     public function up(Schema $schema)
     {
@@ -20,10 +20,10 @@ class Version20140421155256 extends AbstractMigration
                 user_id INT NOT NULL, 
                 creation_date DATETIME NOT NULL, 
                 userRole_id INT NOT NULL, 
-                PRIMARY KEY(id), 
                 INDEX IDX_709FE2E85DFE78E (userRole_id), 
-                UNIQUE INDEX UNIQ_709FE2EA76ED395 (user_id)
-            )
+                INDEX IDX_709FE2EA76ED395 (user_id), 
+                PRIMARY KEY(id)
+            ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB
         ");
         $this->addSql("
             ALTER TABLE claro_user_role_creation 

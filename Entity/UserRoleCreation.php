@@ -12,7 +12,7 @@ use Claroline\CoreBundle\Entity\Role;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * @ORM\Entity(repositoryClass="Claroline\CoreBundle\Repository\RoleCreationRepository")
+ * @ORM\Entity(repositoryClass="Claroline\CoreBundle\Repository\UserRoleCreationRepository")
  * @ORM\Table(name="claro_user_role_creation")
  */
 class UserRoleCreation
@@ -35,11 +35,11 @@ class UserRoleCreation
 
     /**
      *
-     * @ORM\OneToOne(
+     * @ORM\ManyToOne(
         targetEntity="Claroline\CoreBundle\Entity\User",
         cascade={"persist"}
        )
-     * @ORM\JoinColumn(nullable=false, unique=true)
+     * @ORM\JoinColumn(nullable=false)
      */
     protected $user;
 

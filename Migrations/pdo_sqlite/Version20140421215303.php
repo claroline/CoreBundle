@@ -8,9 +8,9 @@ use Doctrine\DBAL\Schema\Schema;
 /**
  * Auto-generated migration based on mapping information: modify it with caution
  *
- * Generation date: 2014/04/21 03:53:01
+ * Generation date: 2014/04/21 09:53:08
  */
-class Version20140421155256 extends AbstractMigration
+class Version20140421215303 extends AbstractMigration
 {
     public function up(Schema $schema)
     {
@@ -27,7 +27,7 @@ class Version20140421155256 extends AbstractMigration
             CREATE INDEX IDX_709FE2E85DFE78E ON claro_user_role_creation (userRole_id)
         ");
         $this->addSql("
-            CREATE UNIQUE INDEX UNIQ_709FE2EA76ED395 ON claro_user_role_creation (user_id)
+            CREATE INDEX IDX_709FE2EA76ED395 ON claro_user_role_creation (user_id)
         ");
     }
 

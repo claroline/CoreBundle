@@ -27,6 +27,7 @@ class UserRoleCreationManager
     private $om;
     private $ut;
     private $userRepo;
+    private $userRoleCreationRepo;
     
     /**
      * Constructor.
@@ -44,6 +45,7 @@ class UserRoleCreationManager
         $this->om = $om;
         $this->ut = $ut;
         $this->userRepo = $om->getRepository('ClarolineCoreBundle:User');
+        $this->userRoleCreationRepo = $om->getRepository('ClarolineCoreBundle:UserRoleCreation');
     }
 
     //public function createUserRoleCreation(AbstractRoleSubject $ars, Role $role)
