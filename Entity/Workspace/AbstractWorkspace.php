@@ -210,7 +210,6 @@ abstract class AbstractWorkspace
 
     public function setGuid($guid)
     {
-        //If set GUID, should also set claro_role name
         $this->guid = $guid;
     }
 
