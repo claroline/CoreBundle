@@ -23,7 +23,7 @@ class UserRoleCreationRepository extends EntityRepository
     * @param ResourceInstance $user
     * @return userRoleCreation
     */
-    public function findUserUserRoleCreation(User $user, Role $role, $getQuery = false)
+    public function findOneUserRoleCreation(User $user, Role $role, $getQuery = false)
     {        
         $qb = $this->createQueryBuilder('userRoleCreation');
         $qb->select('userRoleCreation')

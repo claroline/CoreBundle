@@ -187,7 +187,7 @@ class RoleManager
         if (!$user->hasRole($role->getName())) {
             $user->addRole($role);
             $this->userRoleCreationManager->createUserRoleCreation($user, $role);
-
+            /*
             $this->om->startFlushSuite();
             $this->dispatcher->dispatch(
                 'log',
@@ -195,7 +195,8 @@ class RoleManager
                 array($role, $user)
             );
             $this->om->persist($user);
-            $this->om->endFlushSuite();
+            $this->om->endFlushSuite();*/
+            $this->associateRole($user, $role);
         }
     }
 

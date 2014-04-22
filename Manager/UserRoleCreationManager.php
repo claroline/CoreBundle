@@ -51,9 +51,9 @@ class UserRoleCreationManager
     //public function createUserRoleCreation(AbstractRoleSubject $ars, Role $role)
     public function createUserRoleCreation(User $user, Role $role)
     {
-        //$users = $this->userRepo->findByRoles($roles);
-        //Lequel User est le notre parmis les users !!! ????
-        //Le ARS est un probleme !!!
+        /*$users = $this->userRepo->findByRoles($roles);
+        Lequel User est le notre parmis les users !!! ????
+        Le ARS est un probleme !!!*/
         $this->om->startFlushSuite();
         $userRoleCreation = new UserRoleCreation($user, $role);
         
