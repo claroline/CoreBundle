@@ -20,18 +20,62 @@ class UserRoleCreationRepository extends EntityRepository
 {
 
     /**
-    * @param ResourceInstance $user
+    * 
     * @return userRoleCreation
     */
-    public function findOneUserRoleCreation(User $user, Role $role, $getQuery = false)
+    public function findOneUserRoleCreation(User $user, $getQuery = false)
     {        
-        $qb = $this->createQueryBuilder('userRoleCreation');
+       /* $qb = $this->createQueryBuilder('userRoleCreation');
         $qb->select('userRoleCreation')
-            ->where('userRoleCreation.user = :user_id AND userRoleCreation.userRole = :role_id');       
+            ->where('userRoleCreation.user = :user_id'); // AND userRoleCreation.userRole = :role_id');       
 
         return $results = $qb->getQuery()->execute(
             array(
                 ':user_id'    => $user->getId(),
+                ':role_id'    => $role->getId()
+            )
+        );*/
+
+       $dql = "
+            SELECT role_creation
+            FROM Claroline\CoreBundle\Entity\UserRoleCreation role_creation
+            WHERE role_creation.user = :userId
+        ";
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter('userId',  $user->getId());
+        
+        return ($getQuery) ? $query: $query->getResult();
+    }
+
+   /**
+    * 
+    * @return userRoleCreation
+    */
+    public function findUserRoleCreationByUser(User $user, $getQuery = false)
+    {        
+        $qb = $this->createQueryBuilder('userRoleCreation');
+        $qb->select('userRoleCreation')
+            ->where('userRoleCreation.user = :user_id');       
+
+        return $results = $qb->getQuery()->execute(
+            array(
+                ':user_id'    => $user->getId()
+            )
+        );
+    }
+
+   /**
+   *
+    * @return userRoleCreation
+    */
+    public function findUserRoleCreationByRole(Role $role, $getQuery = false)
+    {        
+        $qb = $this->createQueryBuilder('userRoleCreation');
+        $qb->select('userRoleCreation')
+            ->where('userRoleCreation.userRole = :role_id');       
+
+        return $results = $qb->getQuery()->execute(
+            array(
                 ':role_id'    => $role->getId()
             )
         );

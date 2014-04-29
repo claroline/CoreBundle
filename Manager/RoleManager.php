@@ -187,15 +187,6 @@ class RoleManager
         if (!$user->hasRole($role->getName())) {
             $user->addRole($role);
             $this->userRoleCreationManager->createUserRoleCreation($user, $role);
-            /*
-            $this->om->startFlushSuite();
-            $this->dispatcher->dispatch(
-                'log',
-                'Log\LogRoleSubscribe',
-                array($role, $user)
-            );
-            $this->om->persist($user);
-            $this->om->endFlushSuite();*/
             $this->associateRole($user, $role);
         }
     }
@@ -220,6 +211,18 @@ class RoleManager
             $this->om->endFlushSuite();
         }
     }
+    
+    /**
+     * @param \Claroline\CoreBundle\Entity\User $user
+     * @param \Claroline\CoreBundle\Entity\Role                $role
+     */
+    public function dissociateUserRole(User $user, Role $role)
+    {
+        if ($ars->hasRole($role->getName())) {
+             $this->userRoleCreationManager->removeUserRoleCreation($user, $role);
+            $this->dissociateRole($user, $role);
+        }
+    }
 
     /**
      * @param \Claroline\CoreBundle\Entity\AbstractRoleSubject $ars
@@ -231,6 +234,19 @@ class RoleManager
             $this->associateRole($ars, $role);
         }
         $this->om->persist($ars);
+        $this->om->flush();
+    }
+
+    /**
+     * @param \Claroline\CoreBundle\Entity\User $user
+     * @param \Doctrine\Common\Collections\ArrayCollection     $roles
+     */
+    public function associateUserRoles(User $user, ArrayCollection $roles)
+    {
+        foreach ($roles as $role) {
+            $this->associateUserRole($user, $role);
+        }
+        $this->om->persist($user);
         $this->om->flush();
     }
 
