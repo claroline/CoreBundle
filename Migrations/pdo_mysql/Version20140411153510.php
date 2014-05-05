@@ -14,17 +14,6 @@ class Version20140411153510 extends AbstractMigration
 {
     public function up(Schema $schema)
     {
-        $this->addSql("
-            ALTER TABLE claro_user 
-            ADD last_uri VARCHAR(255) DEFAULT NULL
-        ");
-        $this->addSql("
-            ALTER TABLE claro_role 
-            ADD creation_date DATETIME NOT NULL
-        ");
-        $this->addSql("
-            CREATE UNIQUE INDEX UNIQ_A76799FFE1F029B6 ON claro_resource_node (hash_name)
-        ");
     }
 
     public function down(Schema $schema)
