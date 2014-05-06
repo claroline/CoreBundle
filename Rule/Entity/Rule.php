@@ -114,6 +114,18 @@ abstract class Rule
     }
 
     /**
+     * @param int $id
+     *
+     * @return Rule
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
      * @param string $action
      *
      * @return Rule
@@ -294,6 +306,31 @@ abstract class Rule
     {
         return array(self::DOER_USER,
                      self::RECEIVER_USER);
+    }
+
+    /**
+     * @return bool
+     */
+    public function getIsUserReceiver()
+    {
+        return $this->userType === 1;
+    }
+
+    /**
+     * @param bool $value
+     *
+     * @return Rule
+     */
+    public function setIsUserReceiver($value)
+    {
+        if ($value) {
+            $this->userType = 1;
+        }
+        else {
+            $this->userType = 0;
+        }
+
+        return $this;
     }
 
     /**

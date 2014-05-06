@@ -31,11 +31,19 @@ class BaseProfileType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('firstName', 'text')
-            ->add('lastName', 'text')
-            ->add('username', 'text')
-            ->add('plainPassword', 'repeated', array('type' => 'password', 'invalid_message' => 'password_mismatch'))
-            ->add('mail', 'email')
+        $builder->add('firstName', 'text', array('label' => 'First name'))
+            ->add('lastName', 'text', array('label' => 'Last name'))
+            ->add('username', 'text', array('label' => 'User name'))
+            ->add(
+                'plainPassword',
+                'repeated',
+                array(
+                    'type' => 'password',
+                    'first_options' => array('label' => 'password'),
+                    'second_options' => array('label' => 'verification')
+                )
+            )
+            ->add('mail', 'email', array('label' => 'email'))
             ->add('locale', 'choice', array('choices' => $this->langs, 'required' => false, 'label' => 'Language'));
 
         $content = $this->termsOfService->getTermsOfService(false);
@@ -50,7 +58,7 @@ class BaseProfileType extends AbstractType
                     'data' => $content->getContent()
                 )
             )
-            ->add('terms_of_service', 'checkbox', array('label' => 'I accept the terms of service'));
+            ->add('accepted_terms', 'checkbox', array('label' => 'I accept the terms of service'));
         }
     }
 

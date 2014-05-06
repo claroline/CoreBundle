@@ -166,21 +166,26 @@ class WorkspaceManager
         $workspace = $this->om->factory('Claroline\CoreBundle\Entity\Workspace\SimpleWorkspace');
         $workspace->setCreator($manager);
         $workspace->setName($config->getWorkspaceName());
-        $workspace->setPublic($config->isPublic());
         $workspace->setCode($config->getWorkspaceCode());
+
         if($config->getGuid() != NULL)
         {
             $workspace->setGuid($config->getGuid());
         }else{
             $workspace->setGuid($this->ut->generateGuid());   
         }
+        $workspace->setDescription($config->getWorkspaceDescription());
+
         $workspace->setDisplayable($config->isDisplayable());
         $workspace->setSelfRegistration($config->getSelfRegistration());
         $workspace->setSelfUnregistration($config->getSelfUnregistration());
+        $date = new \Datetime(date('d-m-Y H:i'));
+        $workspace->setCreationDate($date->getTimestamp());
         $baseRoles = $this->roleManager->initWorkspaceBaseRole($config->getRoles(), $workspace);
         $baseRoles['ROLE_ANONYMOUS'] = $this->roleRepo->findOneBy(array('name' => 'ROLE_ANONYMOUS'));
-        //$this->roleManager->associateRole($manager, $baseRoles["ROLE_WS_MANAGER"]);
-        $this->roleManager->associateUserRole($manager, $baseRoles["ROLE_WS_MANAGER"]);
+
+        $this->roleManager->associateRole($manager, $baseRoles['ROLE_WS_MANAGER']);
+
         $dir = $this->om->factory('Claroline\CoreBundle\Entity\Resource\Directory');
         $dir->setName($workspace->getName());
         $rights = $config->getPermsRootConfiguration();
@@ -510,6 +515,11 @@ class WorkspaceManager
         return $this->workspaceRepo->findByAnonymous();
     }
 
+    public function getWorkspacesByManager(User $user)
+    {
+        return $this->workspaceRepo->findWorkspacesByManager($user);
+    }
+
     /**
      * @return integer
      */
@@ -523,9 +533,41 @@ class WorkspaceManager
      *
      * @return \Claroline\CoreBundle\Entity\Workspace\AbstractWorkspace[]
      */
-    public function getWorkspacesByRoles(array $roles)
+    public function getOpenableWorkspacesByRoles(array $roles)
     {
-        return $this->workspaceRepo->findByRoles($roles);
+        $workspaces = $this->workspaceRepo->findByRoles($roles);
+        
+        foreach ($roles as $role) {
+
+            if (strpos('_' . $role, 'ROLE_WS_MANAGER')) {
+                $workspace = $this->roleRepo->findOneByName($role)->getWorkspace();
+                $workspaces[] = $workspace;
+            }
+        }
+
+        $ids = [];
+
+        return array_filter($workspaces, function ($workspace) use (&$ids) {
+            if (!in_array($workspace->getId(), $ids)) {
+                $ids[] = $workspace->getId();
+
+                return true;
+            }
+        });
+    }
+
+    /**
+     * @param string[] $roles
+     * @param integer $page
+     * @param integer $max
+     *
+     * @return \PagerFanta\PagerFanta
+     */
+    public function getOpenableWorkspacesByRolesPager(array $roles, $page, $max)
+    {
+        $workspaces = $this->getOpenableWorkspacesByRoles($roles);
+
+        return $this->pagerFactory->createPagerFromArray($workspaces, $page, $max);
     }
 
     /**
@@ -796,5 +838,41 @@ class WorkspaceManager
         $this->container->get('security.context')->setToken($token);
 
         return $user;
+    }
+
+    /**
+     * @param integer $page
+     * @param integer $max
+     * @param string  $orderedBy
+     *
+     * @return \Pagerfanta\Pagerfanta;
+     */
+    public function findAllWorkspaces($page, $max = 20, $orderedBy = 'id', $order = null)
+    {
+        $order = $order === 'DESC' ? 'DESC' : 'ASC';
+        $tab = array($orderedBy => $order);
+        $result = $this->workspaceRepo->findBy(array(), array('id' => $order));
+
+        return $this->pagerFactory->createPagerFromArray($result, $page, $max);
+    }
+
+    /**
+     * @param string  $search
+     * @param integer $page
+     * @param integer $max
+     * @param string  $orderedBy
+     *
+     * @return \Pagerfanta\Pagerfanta;
+     */
+    public function getWorkspaceByName($search, $page, $max = 20, $orderedBy = 'id')
+    {
+        $query = $this->workspaceRepo->findByName($search, false, $orderedBy);
+
+        return $this->pagerFactory->createPager($query, $page, $max);
+    }
+
+    public function countUsers($workspaceId)
+    {
+        return $this->workspaceRepo->countUsers($workspaceId);
     }
 }

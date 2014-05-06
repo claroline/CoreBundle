@@ -135,21 +135,26 @@ class ResourceController
         $collection = new ResourceCollection(array($parent));
         $collection->setAttributes(array('type' => $resourceType));
         $this->checkAccess('CREATE', $collection);
-        $event = $this->dispatcher->dispatch('create_'.$resourceType, 'CreateResource', array($resourceType));
+        $event = $this->dispatcher->dispatch('create_'.$resourceType, 'CreateResource', array($parent, $resourceType));
 
         if (count($event->getResources()) > 0) {
             $nodesArray = array();
 
             foreach ($event->getResources() as $resource) {
-                $createdResource = $this->resourceManager->create(
-                    $resource,
-                    $this->resourceManager->getResourceTypeByName($resourceType),
-                    $user,
-                    $parent->getWorkspace(),
-                    $parent
-                );
 
-                $nodesArray[] = $this->resourceManager->toArray($createdResource->getResourceNode(), $this->sc->getToken());
+                if ($event->getProcess()) {
+                    $createdResource = $this->resourceManager->create(
+                        $resource,
+                        $this->resourceManager->getResourceTypeByName($resourceType),
+                        $user,
+                        $parent->getWorkspace(),
+                        $parent
+                    );
+
+                    $nodesArray[] = $this->resourceManager->toArray($createdResource->getResourceNode(), $this->sc->getToken());
+                } else {
+                    $nodesArray[] = $this->resourceManager->toArray($resource->getResourceNode(), $this->sc->getToken());
+                }
             }
 
             return new JsonResponse($nodesArray);
@@ -450,7 +455,21 @@ class ResourceController
 
             $path = $this->resourceManager->getAncestors($node);
             $nodes = $this->resourceManager->getChildren($node, $currentRoles);
-            //set "admin" mask if someone is the creator of a resource.
+
+            //set "admin" mask if someone is the creator of a resource or the resource workspace owner.
+            //if someone needs admin rights, the resource type list will go in this array
+            $adminTypes = [];
+            $isOwner = $this->resourceManager->isWorkspaceOwnerOf($node, $this->sc->getToken());
+
+            if ($isOwner || $this->sc->isGranted('ROLE_ADMIN')) {
+                $resourceTypes = $this->resourceManager->getAllResourceTypes();
+
+                foreach ($resourceTypes as $resourceType) {
+                    $adminTypes[$resourceType->getName()] = $this->translator
+                        ->trans($resourceType->getName(), array(), 'resource');
+                }
+            }
+
             foreach ($nodes as $item) {
                 if ($user !== 'anon.') {
                     if ($item['creator_username'] === $user->getUsername()) {
@@ -459,7 +478,9 @@ class ResourceController
                 }
                 $nodesWithCreatorPerms[] = $item;
             }
+
             $creatableTypes = $this->rightsManager->getCreatableTypes($currentRoles, $node);
+            $creatableTypes = array_merge($creatableTypes, $adminTypes);
             $this->dispatcher->dispatch('log', 'Log\LogResourceRead', array($node));
         }
 

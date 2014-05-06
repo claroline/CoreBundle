@@ -27,6 +27,7 @@ class PlatformConfigurationHandler
     private $parameters;
     private $defaultParameters = array(
         'name' => null,
+        'nameActive' => true,
         'support_email' => null,
         'footer' => null,
         'logo' => 'clarolineconnect.png',
@@ -54,7 +55,9 @@ class PlatformConfigurationHandler
         'session_db_user' => null,
         'session_db_password' => null,
         'facebook_client_id' => null,
-        'facebook_client_secret' => null
+        'facebook_client_secret' => null,
+        'facebook_client_active' => null,
+        'form_captcha' => true
     );
 
     /**
@@ -112,6 +115,7 @@ class PlatformConfigurationHandler
     {
         $config = new PlatformConfiguration();
         $config->setName($this->parameters['name']);
+        $config->setNameActive($this->parameters['nameActive']);
         $config->setSupportEmail($this->parameters['support_email']);
         $config->setFooter($this->parameters['footer']);
         $config->setSelfRegistration($this->parameters['allow_self_registration']);
@@ -126,6 +130,7 @@ class PlatformConfigurationHandler
         $config->setMailerUsername($this->parameters['mailer_username']);
         $config->setMailerPassword($this->parameters['mailer_password']);
         $config->setMailerAuthMode($this->parameters['mailer_auth_mode']);
+        $config->setMailerPort($this->parameters['mailer_port']);
         $config->setGoogleMetaTag($this->parameters['google_meta_tag']);
         $config->setRedirectAfterLogin($this->parameters['redirect_after_login']);
         $config->setSessionStorageType($this->parameters['session_storage_type']);
@@ -138,6 +143,8 @@ class PlatformConfigurationHandler
         $config->setSessionDbPassword($this->parameters['session_db_password']);
         $config->setFacebookClientId($this->parameters['facebook_client_id']);
         $config->setFacebookClientSecret($this->parameters['facebook_client_secret']);
+        $config->setFacebookClientActive($this->parameters['facebook_client_active']);
+        $config->setFormCaptcha($this->parameters['form_captcha']);
 
         return $config;
     }

@@ -12,6 +12,8 @@
 (function () {
     'use strict';
 
+    var simpleRights = window.Claroline.SimpleRights;
+    var modal = window.Claroline.Modal;
     var submitForm = function (formAction, formData) {
         //change the redirection
         $.ajax({
@@ -27,9 +29,40 @@
         });
     };
 
+    $('body').on('change', '#simple input', function () {
+        var element = this;
+
+        switch ($(this).attr('id')) {
+            case 'everyone':
+                simpleRights.everyone(element);
+                break;
+            case 'anonymous':
+                simpleRights.anonymous(element);
+                break;
+            case 'workspace':
+                simpleRights.workspace(element);
+                break;
+            case 'platform':
+                simpleRights.platform(element);
+                break;
+            case 'recursive-option':
+                simpleRights.recursive(element);
+                break;
+        }
+    });
+
+    $('body').on('change', '#general input', function () {
+        simpleRights.checkAll(this);
+    });
+
+    $(document).ready(function () {
+        simpleRights.checkAll($('.panel #general input').first());
+    });
+
+
     $('body').on('click', '#submit-default-rights-form-button', function (e) {
         e.preventDefault();
-        var formAction = $(e.currentTarget.parentElement.parentElement).attr('action');
+        var formAction = $(e.currentTarget).parents('form').first().attr('action');
         var form = document.getElementById('node-rights-form');
         var formData = new FormData(form);
         e.preventDefault();
@@ -38,7 +71,6 @@
 
     $('body').on('click', '#submit-right-form-button', function (e) {
         e.preventDefault();
-        $('#modal-check-node-right-box').modal('hide');
         var formAction = $(e.currentTarget.parentElement.parentElement).attr('action');
         var form = document.getElementById('node-right-form');
         var formData = new FormData(form);
@@ -51,7 +83,6 @@
         var form = document.getElementById('form-node-creation-rights');
         var formData = new FormData(form);
         submitForm(formAction, formData);
-        $('#modal-check-node-right-box').modal('hide');
     });
 
     $('.search-role-btn').on('click', function (e) {
@@ -72,7 +103,7 @@
         });
     });
 
-    $('.role-item').live('click', function (event) {
+    $('body').on('click', '.role-item', function (event) {
         event.preventDefault();
         $.ajax({
             url: event.currentTarget.getAttribute('href'),
@@ -84,26 +115,10 @@
                 $('#form-right-wrapper').append(form);
             }
         });
-    });
-
-    $('.res-creation-options').live('click', function (event) {
+    }).on('click', '.res-creation-options', function (event) {
         event.preventDefault();
-        if (event.currentTarget.getAttribute('data-toggle') !== 'tab') {
-            $.ajax({
-                url: event.currentTarget.getAttribute('href'),
-                type: 'POST',
-                processData: false,
-                contentType: false,
-                success: function (form) {
-                    $('#modal-check-role').empty();
-                    $('#modal-check-role').append(form);
-                    $('#modal-check-node-right-box').modal('show');
-                }
-            });
-        }
-    });
-
-    $('.workspace-role-item').live('click', function (event) {
+        modal.fromUrl(event.currentTarget.getAttribute('href'));
+    }).on('click', '.workspace-role-item', function (event) {
         event.preventDefault();
         $.ajax({
             context: this,

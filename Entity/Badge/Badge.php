@@ -24,20 +24,34 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Claroline\CoreBundle\Form\Badge\Constraints as BadgeAssert;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 
 /**
- * Class Badge
- *
  * @ORM\Table(name="claro_badge")
  * @ORM\Entity(repositoryClass="Claroline\CoreBundle\Repository\Badge\BadgeRepository")
+ * @ORM\EntityListeners({"Claroline\CoreBundle\Listener\Badge\LocaleSetterListener"})
  * @ORM\HasLifecycleCallbacks
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  * @BadgeAssert\AutomaticWithRules
  * @BadgeAssert\HasImage
  * @BadgeAssert\AtLeastOneTranslation
+ * @BadgeAssert\CheckExpiringPeriod
  * @ExclusionPolicy("all")
  */
 class Badge extends Rulable
 {
+    use SoftDeleteableEntity;
+
+    const EXPIRE_PERIOD_DAY       = 0;
+    const EXPIRE_PERIOD_DAY_LABEL = 'day';
+    const EXPIRE_PERIOD_WEEK       = 1;
+    const EXPIRE_PERIOD_WEEK_LABEL = 'week';
+    const EXPIRE_PERIOD_MONTH       = 2;
+    const EXPIRE_PERIOD_MONTH_LABEL = 'month';
+    const EXPIRE_PERIOD_YEAR       = 3;
+    const EXPIRE_PERIOD_YEAR_LABEL = 'year';
+
     /**
      * @var integer
      *
@@ -53,8 +67,10 @@ class Badge extends Rulable
      *
      * @ORM\Column(type="smallint", nullable=false)
      * @Expose
+     * @Assert\NotBlank()
+     * @Assert\GreaterThan(value = 0)
      */
-    protected $version;
+    protected $version = 1;
 
     /**
      * @var boolean
@@ -73,12 +89,26 @@ class Badge extends Rulable
     protected $imagePath;
 
     /**
-     * @var \DateTime
+     * @var boolean
      *
-     * @ORM\Column(name="expired_at", type="datetime", nullable=true)
-     * @Expose
+     * @ORM\Column(name="is_expiring", type="boolean", options={"default": 0})
      */
-    protected $expiredAt;
+    protected $isExpiring = false;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="expire_duration", type="integer", nullable=true)
+     * @Assert\GreaterThan(value = 0)
+     */
+    protected $expireDuration;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="expire_period", type="smallint", nullable=true)
+     */
+    protected $expirePeriod;
 
     /**
      * @var UploadedFile
@@ -227,9 +257,20 @@ class Badge extends Rulable
     }
 
     /**
+     * @param ArrayCollection|BadgeTranslation[] $translations
+     *
+     * @return Badge
+     */
+    public function setTranslations($translations)
+    {
+        $this->translations = $translations;
+
+        return $this;
+    }
+
+    /**
      * @param string $locale
      *
-     * @throws \InvalidArgumentException
      * @return BadgeTranslation|null
      */
     public function getTranslationForLocale($locale)
@@ -240,28 +281,66 @@ class Badge extends Rulable
             }
         }
 
-        throw new \InvalidArgumentException(sprintf('Unknown translation for locale %s.', $locale));
+        return null;
     }
 
-    /**
-     * @return BadgeTranslation|null
-     */
-    public function getFrTranslation()
+    public function __get($name)
     {
-        return $this->getTranslationForLocale('fr');
+        $translationName = 'Translation';
+
+        if (preg_match(sprintf('/%s$/', $translationName), $name)) {
+            $searchedLocale = substr($name, 0, -strlen($translationName));
+            $translation = $this->getTranslationForLocale($searchedLocale);
+
+            if (null === $translation) {
+                $translation = new BadgeTranslation();
+                $translation
+                    ->setLocale($searchedLocale)
+                    ->setBadge($this);
+            }
+
+            return $translation;
+        }
+        elseif (preg_match('/Name|Description|Criteria$/', $name, $matches)) {
+            //Usefull for badge rule form when wanted frName on a badge
+            $searchedLocale = substr($name, 0, -strlen($matches[0]));
+            $translation    = $this->getTranslationForLocale($searchedLocale);
+
+            if (null !== $translation) {
+                return $translation->{'get' . $matches[0]}();
+            }
+
+            return null;
+        }
+
+        $trace = debug_backtrace();
+        trigger_error(
+            'Undefined property via __get(): ' . $name .
+            ' in ' . $trace[0]['file'] .
+            ' on line ' . $trace[0]['line'],
+            E_USER_NOTICE);
+
+        return null;
     }
 
-    /**
-     * @return BadgeTranslation|null
-     */
-    public function getEnTranslation()
+    public function __set($name, $value)
     {
-        return $this->getTranslationForLocale('en');
-    }
+        $translationName = 'Translation';
 
-    public function setFrTranslation(BadgeTranslation $badgeTranslation)
-    {
+        if (preg_match(sprintf('/%s$/', $translationName), $name)) {
+            $this->addTranslation($value);
 
+            return $this;
+        }
+
+        $trace = debug_backtrace();
+        trigger_error(
+            'Undefined property via __set(): ' . $name .
+            ' in ' . $trace[0]['file'] .
+            ' on line ' . $trace[0]['line'],
+            E_USER_NOTICE);
+
+        return null;
     }
 
     /**
@@ -287,26 +366,6 @@ class Badge extends Rulable
         $this->translations->removeElement($translation);
 
         return $this;
-    }
-
-    /**
-     * @param \DateTime $expiredAt
-     *
-     * @return Badge
-     */
-    public function setExpiredAt($expiredAt)
-    {
-        $this->expiredAt = $expiredAt;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getExpiredAt()
-    {
-        return $this->expiredAt;
     }
 
     /**
@@ -519,6 +578,121 @@ class Badge extends Rulable
     }
 
     /**
+     * @param boolean $isExpiring
+     *
+     * @return Badge
+     */
+    public function setIsExpiring($isExpiring)
+    {
+        $this->isExpiring = $isExpiring;
+
+        return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getIsExpiring()
+    {
+        return $this->isExpiring;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isExpiring()
+    {
+        return $this->getIsExpiring();
+    }
+
+    /**
+     * @param int $expireDuration
+     *
+     * @return Badge
+     */
+    public function setExpireDuration($expireDuration)
+    {
+        $this->expireDuration = $expireDuration;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getExpireDuration()
+    {
+        return $this->expireDuration;
+    }
+
+    /**
+     * @param int $expirePeriod
+     *
+     * @return Badge
+     */
+    public function setExpirePeriod($expirePeriod)
+    {
+        $this->expirePeriod = $expirePeriod;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getExpirePeriod()
+    {
+        return $this->expirePeriod;
+    }
+
+    /**
+     * @return string
+     */
+    public function getExpirePeriodLabel()
+    {
+        return self::getExpirePeriodTypeLabel($this->expirePeriod);
+    }
+
+    /**
+     * @return array
+     */
+    public static function getExpirePeriodTypes()
+    {
+        return array(self::EXPIRE_PERIOD_DAY,
+                     self::EXPIRE_PERIOD_WEEK,
+                     self::EXPIRE_PERIOD_MONTH,
+                     self::EXPIRE_PERIOD_YEAR);
+    }
+
+    /**
+     * @return array
+     */
+    public static function getExpirePeriodLabels()
+    {
+        return array(self::EXPIRE_PERIOD_DAY_LABEL,
+                     self::EXPIRE_PERIOD_WEEK_LABEL,
+                     self::EXPIRE_PERIOD_MONTH_LABEL,
+                     self::EXPIRE_PERIOD_YEAR_LABEL);
+    }
+
+    /**
+     * @param integer $expirePeriodType
+     *
+     * @throws \InvalidArgumentException
+     * @return string
+     */
+    public static function getExpirePeriodTypeLabel($expirePeriodType)
+    {
+        $expirePeriodLabels = self::getExpirePeriodLabels();
+
+        if (!isset($expirePeriodLabels[$expirePeriodType])) {
+            throw new \InvalidArgumentException("Unknown expired period type.");
+        }
+
+        return $expirePeriodLabels[$expirePeriodType];
+    }
+
+    /**
      * @param UploadedFile $file
      *
      * @return Badge
@@ -595,41 +769,39 @@ class Badge extends Rulable
 
     protected function dealWithAtLeastOneTranslation(ObjectManager $objectManager)
     {
-        $frTranslation = $this->getFrTranslation();
-        $enTranslation = $this->getEnTranslation();
+        $translations          = $this->getTranslations();
+        $hasEmptyTranslation   = 0;
+        /** @var \Claroline\CoreBundle\Entity\Badge\BadgeTranslation[] $emptyTranslations */
+        $emptyTranslations     = array();
+        /** @var \Claroline\CoreBundle\Entity\Badge\BadgeTranslation[] $nonEmptyTranslations */
+        $nonEmptyTranslations  = array();
 
-        $frName        = $frTranslation->getName();
-        $frDescription = $frTranslation->getDescription();
-        $frCriteria    = $frTranslation->getCriteria();
+        foreach ($translations as $translation) {
+            // Have to put all method call in variable because of empty doesn't
+            // support result of method as parameter (prior to PHP 5.5)
+            $name        = $translation->getName();
+            $description = $translation->getDescription();
+            $criteria    = $translation->getCriteria();
+            if (empty($name) && empty($description) && empty($criteria)) {
+                $emptyTranslations[] = $translation;
+            }
+            else {
+                $nonEmptyTranslations[] = $translation;
+            }
+        }
 
-        $enName        = $enTranslation->getName();
-        $enDescription = $enTranslation->getDescription();
-        $enCriteria    = $enTranslation->getCriteria();
-
-        // Have to put all method call in variable because of empty doesn't
-        // support result of method as parameter (prior to PHP 5.5)
-        $hasFrTranslation = !empty($frName) && !empty($frDescription) && !empty($frCriteria);
-        $hasEnTranslation = !empty($enName) && !empty($enDescription) && !empty($enCriteria);
-
-        if (!$hasFrTranslation && !$hasEnTranslation) {
+        if (count($translations) === count($emptyTranslations)) {
             throw new \Exception('At least one translation must be defined on the badge');
         }
 
-        if (!$hasFrTranslation || !$hasEnTranslation) {
-            if ($hasFrTranslation) {
-                $enTranslation
-                    ->setLocale('en')
-                    ->setName($frName)
-                    ->setDescription($frDescription)
-                    ->setCriteria($frCriteria);
-            } elseif ($hasEnTranslation) {
-                $frTranslation
-                    ->setLocale('fr')
-                    ->setName($enName)
-                    ->setDescription($enDescription)
-                    ->setCriteria($enCriteria);
-            }
+        $firstNonEmptyTranslation = $nonEmptyTranslations[0];
+        foreach ($emptyTranslations as $emptyTranslation) {
+            $emptyTranslation
+                ->setName($firstNonEmptyTranslation->getName())
+                ->setDescription($firstNonEmptyTranslation->getDescription())
+                ->setCriteria($firstNonEmptyTranslation->getCriteria());
         }
+
     }
 
     /**
@@ -665,7 +837,7 @@ class Badge extends Rulable
 
         $this->file->move($this->getUploadRootDir(), $this->imagePath);
 
-        if (null !== $this->olfFileName) {
+        if (null !== $this->olfFileName && is_file($this->olfFileName)) {
             unlink($this->getUploadRootDir() . DIRECTORY_SEPARATOR . $this->olfFileName);
             $this->olfFileName = null;
         }
@@ -709,5 +881,31 @@ class Badge extends Rulable
         }
 
         return $restriction;
+    }
+
+    public function __clone()
+    {
+        if ($this->id) {
+            $this->id = null;
+
+            $newBagdeRules = new ArrayCollection();
+            foreach ($this->badgeRules as $badgeRule) {
+                $newBadgeRule = clone $badgeRule;
+                $newBadgeRule->setAssociatedBadge($this);
+                $newBagdeRules->add($newBadgeRule);
+            }
+            $this->badgeRules = $newBagdeRules;
+
+            $newTranslations = new ArrayCollection();
+            foreach ($this->translations as $translation) {
+                $newTranslation = clone $translation;
+                $newTranslation->setBadge($this);
+                $newTranslations->add($newTranslation);
+            }
+            $this->translations = $newTranslations;
+
+            $this->userBadges  = new ArrayCollection();
+            $this->badgeClaims = new ArrayCollection();
+        }
     }
 }

@@ -108,6 +108,40 @@ class AdditionalInstaller extends BaseInstaller
             $updater020900->setLogger($this->logger);
             $updater020900->postUpdate();
         }
+
+        if (version_compare($currentVersion, '2.10.0', '<')) {
+            $updater021000 = new Updater\Updater021000($this->container);
+            $updater021000->setLogger($this->logger);
+            $updater021000->postUpdate();
+        }
+
+        if (version_compare($currentVersion, '2.11.0', '<')) {
+            $this->buildDefaultTemplate();
+            $updater021000 = new Updater\Updater021100($this->container);
+            $updater021000->setLogger($this->logger);
+            $updater021000->postUpdate();
+        }
+
+        if (version_compare($currentVersion, '2.12.0', '<')) {
+            $this->buildDefaultTemplate();
+            $updater021200 = new Updater\Updater021200($this->container);
+            $updater021200->setLogger($this->logger);
+            $updater021200->postUpdate();
+        }
+
+        if (version_compare($currentVersion, '2.12.1', '<')) {
+            $this->buildDefaultTemplate();
+            $updater021200 = new Updater\Updater021201($this->container);
+            $updater021200->setLogger($this->logger);
+            $updater021200->postUpdate();
+        }
+
+        if (version_compare($currentVersion, '2.14.0', '<')) {
+            $this->buildDefaultTemplate();
+            $updater021400 = new Updater\Updater021400($this->container);
+            $updater021400->setLogger($this->logger);
+            $updater021400->postUpdate();
+        }
     }
 
     private function setLocale()

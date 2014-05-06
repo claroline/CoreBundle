@@ -16,7 +16,7 @@
                 </a>
             </div>
             <div id="collapse-{{ currentIndex }}" class="panel-body collapse">
-                {% if hierarchy[workspaceTagId]|length > 0 %}
+                {% if (hierarchy[workspaceTagId] is defined and hierarchy[workspaceTagId]|length > 0 ) %}
                 {{ _self.showTag(hierarchy[workspaceTagId], tagWorkspaces, hierarchy, currentIndex, displayable) }}
                 {% endif %}
 
@@ -59,13 +59,13 @@
     </div>
     <div id="workspace-list-div" class="panel-body">
         {% if is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('claro_manage_admin_workspace_tag') }}" class="btn btn-default">
+            <a href="{{ path('claro_manage_admin_workspace_tag') }}" class="btn btn-default" role="button">
                 {{ 'classify_workspaces'|trans({}, 'platform') }}
             </a>
         {% endif %}
 
         {% if is_granted('ROLE_USER') %}
-            <a href="{{ path('claro_list_workspaces_with_self_registration') }}" class="btn btn-default">
+            <a href="{{ path('claro_list_workspaces_with_self_registration') }}" class="btn btn-default" role="button">
                 {{ 'register_to_a_workspace'|trans({}, 'platform') }}
             </a>
         {% endif %}
@@ -86,7 +86,7 @@
                         <i class="icon-chevron-down pull-right"></i>
                     </a>
                 </div>
-                <div id="collapse-all" class="panel-body collapse {% if tags|length == 0 %}in{% endif %}">
+                <div id="collapse-all" class="list-group collapse {% if tags|length == 0 %}in{% endif %}">
                     {% include 'ClarolineCoreBundle:Workspace:workspaceCompleteListPager.html.twig' %}
                 </div>
             </div>
@@ -98,9 +98,6 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script
-        src="{{ asset('bundles/clarolinecore/js/workspace/workspace_list.js') }}"
-        type="text/javascript"
-    >
+    <script src="{{ asset('bundles/clarolinecore/js/workspace/workspace_list.js') }}" type="text/javascript">
     </script>
 {% endblock %}
