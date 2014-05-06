@@ -41,6 +41,7 @@ class Configuration implements ConfigurationInterface
         $this->addResourceSection($pluginSection);
         $this->addToolSection($pluginSection);
         $this->addThemeSection($pluginSection);
+        $this->addAdminToolSection($pluginSection);
 
         return $treeBuilder;
     }
@@ -147,6 +148,14 @@ class Configuration implements ConfigurationInterface
                                 ->scalarNode('name')->isRequired()->end()
                                 ->scalarNode('menu_name')->end()
                             ->end()
+                         ->end()
+                       ->end()
+                       ->arrayNode('default_rights')
+                         ->prototype('array')
+                            ->children()
+                                ->scalarNode('name')->end()
+                            ->end()
+                         ->end()
                        ->end()
                     ->end()
                  ->end()
@@ -220,6 +229,8 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('has_options')->defaultValue(false)->end()
                         ->scalarNode('is_configurable_in_workspace')->defaultValue(false)->end()
                         ->scalarNode('is_configurable_in_desktop')->defaultValue(false)->end()
+                        ->scalarNode('is_locked_for_admin')->defaultValue(false)->end()
+                        ->scalarNode('is_anonymous_excluded')->defaultValue(true)->end()
                     ->end()
                 ->end()
             ->end()
@@ -234,6 +245,20 @@ class Configuration implements ConfigurationInterface
                     ->children()
                       ->scalarNode('name')->isRequired()->end()
                       ->scalarNode('path')->isRequired()->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end()->end();
+    }
+
+    private function addAdminToolSection($pluginSection)
+    {
+        $pluginSection
+            ->arrayNode('admin_tools')
+                ->prototype('array')
+                    ->children()
+                        ->scalarNode('name')->isRequired()->end()
+                        ->scalarNode('class')
                     ->end()
                 ->end()
             ->end()

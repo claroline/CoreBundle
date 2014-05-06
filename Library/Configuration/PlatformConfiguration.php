@@ -16,6 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class PlatformConfiguration
 {
     private $name;
+    private $nameActive;
     private $supportEmail;
     private $selfRegistration;
     private $localeLanguage;
@@ -43,6 +44,8 @@ class PlatformConfiguration
     private $sessionDbPassword;
     private $facebookClientId;
     private $facebookClientSecret;
+    private $facebookClientActive;
+    private $formCaptcha;
 
     /**
      * @param mixed $sessionDbDataCol
@@ -404,5 +407,47 @@ class PlatformConfiguration
     public function getFacebookClientSecret()
     {
         return $this->facebookClientSecret;
+    }
+
+    /**
+     * @param boolean $facebookClientActive
+     */
+    public function setFacebookClientActive($facebookClientActive)
+    {
+        $this->facebookClientActive = $facebookClientActive;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isFacebookClientActive()
+    {
+        return $this->facebookClientActive;
+    }
+
+    /**
+     * @param boolean $nameActive
+     */
+    public function setNameActive($nameActive)
+    {
+        $this->nameActive = $nameActive;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isNameActive()
+    {
+        return $this->nameActive;
+    }
+
+    public function setFormCaptcha($boolean)
+    {
+        $this->formCaptcha = $boolean;
+    }
+
+    public function getFormCaptcha()
+    {
+        return $this->formCaptcha;
     }
 }

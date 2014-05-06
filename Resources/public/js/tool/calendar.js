@@ -69,9 +69,18 @@
                 .removeAttr('selected')
                 .removeAttr('disabled');
             $('#myModalLabel').text(Translator.get('agenda' + ':' + 'add_event'));
+            $('#agenda_form_start').val($.fullCalendar.formatDate(date,'dd-MM-yyyy'));
+            var currentDate = new Date();
+            if( clickedDate > currentDate) {
+                $('#agenda_form_end').val($.fullCalendar.formatDate(clickedDate,'dd-MM-yyyy'));
+            } else {
+                $('#agenda_form_end').val($.fullCalendar.formatDate(currentDate,'dd-MM-yyyy'));
+            }
+
             $('.hours').each(function() {
                 $(this).val('00:00');
             });
+            $('#agenda_form_priority option[value= #01A9DB]').attr('selected', 'selected');
             $('#myModal').modal();
         };
         var dayClickDesktop = function (date) {
@@ -88,10 +97,17 @@
             $('.hours').each(function() {
                 $(this).val('00:00');
             });
+            var currentDate = new Date();
+            $('#agenda_form_start').val($.fullCalendar.formatDate(date,'dd-MM-yyyy'));
+            if( clickedDate > currentDate) {
+                $('#agenda_form_end').val($.fullCalendar.formatDate(clickedDate,'dd-MM-yyyy'));
+            } else {
+                $('#agenda_form_end').val($.fullCalendar.formatDate(currentDate,'dd-MM-yyyy'));
+            }
+            $('#agenda_form_priority option[value= #01A9DB]').attr('selected', 'selected');
             $('#myModal').modal();
         };
         var dayClickFunction = context === 'desktop' ? dayClickDesktop : dayClickWorkspace;
-
         $('#save').click(function () {
             if ($('#agenda_form_title').val() !== '') {
                 $('#save').attr('disabled', 'disabled');
@@ -160,8 +176,8 @@
                 var event2 = new Object();
                 event2.id = id;
                 event2.title = $('#agenda_form_title').val();
-                event2.start = $('#agenda_form_start').val();
-                event2.end = $('#agenda_form_end').val();
+                event2.start = $('#agenda_form_start').val()+' '+$('#agenda_form_startHours').val();
+                event2.end = $('#agenda_form_end').val()+' '+$('#agenda_form_endHours').val();
                 event2.allDay = $('#agenda_form_allDay').attr('checked') === 'checked' ? 1 : 0;
                 event2.color = $('#agenda_form_priority').val();
                 event2.description = $('#agenda_form_description').val();
@@ -169,24 +185,25 @@
                 var compare = compareEvents(event1[0], event2 );
            } else {
                 compare = 1;
-           } 
+           }
             if (compare > 0 ) {
-                $('#agenda_form_start').val($('#agenda_form_start').val()+' '+$('#agenda_form_startHours').val());
-                $('#agenda_form_end').val($('#agenda_form_end').val()+' '+$('#agenda_form_endHours').val());
-                $('#updateBtn').attr('disabled', 'disabled');
-                var data = new FormData($('#myForm')[0]);
-                data.append('id', id);
-                data.append('agenda_form[description]',$('#agenda_form_description').val());
-                var allDay = $('#agenda_form_allDay').attr('checked') === 'checked' ? 1 : 0;
-                data.append('agenda_form[allDay]', allDay);
-                url = $('a#update').attr('href');
-                $.ajax({
-                    'url': url,
-                    'type': 'POST',
-                    'data': data,
-                    'processData': false,
-                    'contentType': false,
-                    'success': function (data, textStatus, xhr) {
+                if ($('#agenda_form_title').val() !== '') {
+                    $('#agenda_form_start').val($('#agenda_form_start').val()+' '+$('#agenda_form_startHours').val());
+                    $('#agenda_form_end').val($('#agenda_form_end').val()+' '+$('#agenda_form_endHours').val());
+                    $('#updateBtn').attr('disabled', 'disabled');
+                    var data = new FormData($('#myForm')[0]);
+                    data.append('id', id);
+                    data.append('agenda_form[description]',$('#agenda_form_description').val());
+                    var allDay = $('#agenda_form_allDay').attr('checked') === 'checked' ? 1 : 0;
+                    data.append('agenda_form[allDay]', allDay);
+                    url = $('a#update').attr('href');
+                    $.ajax({
+                        'url': url,
+                        'type': 'POST',
+                        'data': data,
+                        'processData': false,
+                        'contentType': false,
+                        'success': function (data, textStatus, xhr) {
                             $('#myModal').modal('hide');
                             $('#updateBtn').removeAttr('disabled');
                             $('#calendar').fullCalendar('refetchEvents');
@@ -197,15 +214,18 @@
                                     $("#tasks").html(data);
                                 }
                             });
-                    },
-                    'error': function ( xhr, textStatus) {
-                        if (xhr.status === 400) {//bad request
-                            alert(Translator.get('agenda' + ':' + 'error'));
-                            $('#save').removeAttr('disabled');
-                            $('#output').html(textStatus);
+                        },
+                        'error': function ( xhr, textStatus) {
+                            if (xhr.status === 400) {//bad request
+                                alert(Translator.get('agenda' + ':' + 'error'));
+                                $('#save').removeAttr('disabled');
+                                $('#output').html(textStatus);
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    alert(t('title'));
+                }
             } else {
                 $('#myModal').modal('hide');
             }
@@ -362,12 +382,12 @@
                                     return 1;
                             } else 
                                 return 2;
-                        } else 
+                        } else
                             return 3;
-                    } else 
+                    } else
                         return 4;
                 }     
-                else 
+                else
                     return 5;
             }
             return 6;
@@ -395,9 +415,9 @@
                 day: t('day')
             },
             firstDay:1,
-            monthNames: [t('january'), t('february'), t('mars'), t('april'), t('may'), t('june'), t('july'),
+            monthNames: [t('january'), t('february'), t('march'), t('april'), t('may'), t('june'), t('july'),
                 t('august'), t('september'), t('october'), t('november'), t('december')],
-            monthNamesShort: [t('jan'), t('feb'), t('mars'), t('apr'), t('may'), t('ju'), t('jul'),
+            monthNamesShort: [t('jan'), t('feb'), t('mar'), t('apr'), t('may'), t('ju'), t('jul'),
                 t('aug'), t('sept'), t('nov'), t('dec')],
             dayNames: [ t('sunday'),t('monday'), t('tuesday'), t('wednesday'), t('thursday'), t('friday'), t('saturday')],
             dayNamesShort: [ t('sun'), t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat')],
@@ -423,15 +443,29 @@
                 {
                     return false;
                 }
+
+                var eventContent = '';
+                eventContent += '<a href="#" data-target="#myModal" role="button" data-toggle="modal" class="launch" data-id='+event.id+'>';
+                eventContent +=     Translator.get('platform' + ':' + 'edit');
+                eventContent += '</a>';
+                eventContent += '<div>';
+                eventContent +=     t('agenda_form_start') + ' : ' + $.fullCalendar.formatDate(event.start ,'dd-MM-yyyy HH:mm');
+                eventContent += '</div>';
+                eventContent += '<div class="mypopo' + event.id + '">';
+                eventContent +=     t('agenda_form_end') +':'  + $.fullCalendar.formatDate(event.end ,'dd-MM-yyyy HH:mm');
+                eventContent += '</div>';
+
+                if (typeof event.description !== 'undefined' && event.description !== null && event.description.length !== 0) {
+                    eventContent += '<div style="word-break:break-all;">';
+                    eventContent +=     'Description: ' + event.description;
+                    eventContent += '</div>';
+                }
+
                 element.popover({
                     title: event.title + '<button type="button" class="pop-close close" data-dismiss="popover" aria-hidden="true">&times;</button>',
-                    content:  '<a href="#" data-target="#myModal" role="button" data-toggle="modal" class="launch" data-id='+event.id+'>'+
-                        Translator.get('platform' + ':' + 'edit')+'</a>'+
-                        ' <div>'+t('agenda_form_start') +' : '+
-                        $.fullCalendar.formatDate(event.start ,'dd-MM-yyyy HH:mm') + '</div>'+
-                        '<div class="mypopo' + event.id + '">'+t('agenda_form_end') +':'  + $.fullCalendar.formatDate(event.end ,'dd-MM-yyyy HH:mm') +'</div>' +'<br />Description: ' + event.description,
-                    html:true,
-                    container:'body'
+                    content: eventContent,
+                    html: true,
+                    container: 'body'
                 });
             },
             eventResize: function (event, dayDelta, minuteDelta) {

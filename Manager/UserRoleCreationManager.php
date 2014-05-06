@@ -60,8 +60,20 @@ class UserRoleCreationManager
         $this->om->persist($userRoleCreation);
         $this->om->endFlushSuite();
 
+        echo "le role est créé<br/>";
+        //$this->removeUserRoleCreation($user, $role);
+        echo "Je viens de le detruire<br/>";
+
         return $userRoleCreation;
     }
 
-    //public function removeRoleCreation(User $user, Role $role)
+    public function removeUserRoleCreation(User $user, Role $role)
+    {
+        $userRoleCreation = $this->userRoleCreationRepo->findOneBy(array('user' => $user->getId()));
+       // $userRoleCreation = $this->userRoleCreationRepo->findOneUserRoleCreation($user); //, $role);
+        //$userRoleCreation = $userRoleCreations[0];
+        echo count($userRoleCreation)."<br/>";
+        $this->om->remove($userRoleCreation);
+        $this->om->flush(); //flush needed? +flush suite???
+    }
 }

@@ -10,15 +10,21 @@
 (function () {
     'use strict';
 
-    var home = window.Claroline.Home;
+    var routing = window.Routing;
+    var modal = window.Claroline.Modal;
 
     $('body').on('click', '.locale-select', function () {
         if (!$(this).parents('.modal').get(0)) {
-            home.modal('locale/select');
+            modal.fromRoute('claroline_locale_select');
         } else {
-            $.ajax(home.path + 'locale/change/' + $(this).html().toLowerCase())
+            $.ajax(routing.generate('claroline_locale_change', {'_locale': $(this).html().toLowerCase()}))
             .done(function () {
-                window.location.reload();
+                // window.location.reload() does not work with post request;
+                var form = document.createElement('form');
+                form.action = document.URL;
+                form.method = 'post';
+                document.body.appendChild(form);
+                form.submit();
             });
         }
     });

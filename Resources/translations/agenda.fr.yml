@@ -22,13 +22,18 @@ dec: Déc
 december: Décembre
 end: Fin
 end_date: 'Date de fin'
+export: 'Exporter les événements'
 error: 'Une erreur s''est produite, veuillez réessayer'
+event: Evénement
 event_update: 'Modification enregistrée'
 feb: Févr
 february: Février
+filter_user: Filtrer par utilisateur
+filter_ws: Filtrer par espace d'activités
 fri: Ven
 friday: Vendredi
 high: Haute
+import_agenda_file_file: 'Importer'
 jan: Janv
 january: Janvier
 jul: Juil
@@ -49,6 +54,7 @@ next: '>'
 nextYear: '>>'
 'no event found': 'Pas d''événements'
 no_description: 'Pas de description'
+no_task_found: Pas de tâches
 nov: Nov
 november: Novembre
 oct: Oct
@@ -62,6 +68,7 @@ september: Septembre
 start_date: 'Date de début'
 sun: Dim
 sunday: Dimanche
+task: Tâche
 tasks: Tâches
 thu: Jeu
 thursday: Jeudi
@@ -69,7 +76,8 @@ title: 'Le titre est obligatoire'
 today: auj
 tue: Mar
 tuesday: Mardi
-update: modifier
+type: Type
+update: Modifier
 wed: Mer
 wednesday: Mercredi
 week: semaine

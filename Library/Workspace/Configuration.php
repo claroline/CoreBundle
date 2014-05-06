@@ -23,7 +23,7 @@ class Configuration
     private $workspaceType;
     private $workspaceName;
     private $workspaceCode;
-    private $isPublic = false;
+    private $workspaceDescription;
     private $displayable = false;
     private $selfRegistration = false;
     private $selfUnregistration = false;
@@ -50,7 +50,6 @@ class Configuration
             if (true === $code = $archive->open($template)) {
                 $parsedFile = Yaml::parse($archive->getFromName('config.yml'));
                 $archive->close();
-                $this->setCreatorRole($parsedFile['creator_role']);
                 $this->setRoles($parsedFile['roles']);
                 $this->setToolsPermissions($parsedFile['tools_infos']);
                 $this->setToolsConfiguration($parsedFile['tools']);
@@ -91,15 +90,7 @@ class Configuration
         return $this->workspaceName;
     }
 
-    public function setPublic($isPublic)
-    {
-        $this->isPublic = $isPublic;
-    }
 
-    public function isPublic()
-    {
-        return $this->isPublic;
-    }
 
     public function check()
     {
@@ -109,30 +100,6 @@ class Configuration
 
         if (!is_string($this->workspaceName) || 0 === strlen($this->workspaceName)) {
             throw new RuntimeException('Workspace name must be a non empty string');
-        }
-
-        $this->checkRoles($this->getRoles());
-    }
-
-    /**
-     * Require an array of role:
-     * array('ROLE_WS_COLLABORATOR' => 'translation')
-     * @param type $roles
-     */
-    public function checkRoles(array $roles)
-    {
-        $mandatoryRoles = \Claroline\CoreBundle\Entity\Role::getMandatoryWsRoles();
-        $manadatoryCount = count($mandatoryRoles);
-        $found = 0;
-
-        foreach (array_keys($roles) as $roleName) {
-            if (in_array($roleName, $mandatoryRoles)) {
-                $found++;
-            }
-        }
-
-        if ($found !== $manadatoryCount) {
-            throw new BaseRoleException('One or more base roles are missing');
         }
     }
 
@@ -144,6 +111,17 @@ class Configuration
     public function getWorkspaceCode()
     {
         return $this->workspaceCode;
+    }
+    
+    
+    public function setWorkspaceDescription($workspaceDescription)
+    {
+        $this->workspaceDescription = $workspaceDescription;
+    }
+
+    public function getWorkspaceDescription()
+    {
+        return $this->workspaceDescription;
     }
 
     public function getRoles()
@@ -174,16 +152,6 @@ class Configuration
     public function setToolsConfiguration(array $toolsConfig)
     {
         $this->toolsConfig = $toolsConfig;
-    }
-
-    public function setCreatorRole($role)
-    {
-        $this->creatorRole = $role;
-    }
-
-    public function getCreatorRole()
-    {
-        return $this->creatorRole;
     }
 
     public function setArchive($templateFile)

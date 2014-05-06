@@ -56,6 +56,7 @@ class FormFactory
     const TYPE_PLATFORM_APPEARANCE = 'platform_appearance';
     const TYPE_PLATFORM_MAIL_SERVER = 'platform_mail_server';
     const TYPE_PLATFORM_MAIL_INSCRIPTION = 'platform_mail_inscription';
+    const TYPE_AGENDA_IMPORTER = 'import_agenda_file';
 
     private static $types = array(
         self::TYPE_MESSAGE => array(
@@ -142,8 +143,7 @@ class FormFactory
             'formType' => 'Claroline\CoreBundle\Form\WorkspaceRoleType'
         ),
         self::TYPE_ROLE_TRANSLATION => array(
-            'formType' => 'Claroline\CoreBundle\Form\RoleTranslationType',
-            'entity' => 'Claroline\CoreBundle\Entity\Role'
+            'formType' => 'Claroline\CoreBundle\Form\RoleTranslationType'
         ),
         self::TYPE_USER_EMAIL => array(
             'formType' => 'Claroline\CoreBundle\Form\EmailType'
@@ -190,6 +190,9 @@ class FormFactory
         ),
         self:: TYPE_PLATFORM_MAIL_INSCRIPTION => array(
             'formType' => 'Claroline\CoreBundle\Form\Administration\MailInscriptionType'
+        ),
+        self:: TYPE_AGENDA_IMPORTER => array(
+            'formType' => 'Claroline\CoreBundle\Form\ImportAgendaType'
         )
     );
 

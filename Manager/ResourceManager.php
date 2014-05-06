@@ -23,9 +23,6 @@ use Claroline\CoreBundle\Repository\ResourceNodeRepository;
 use Claroline\CoreBundle\Repository\ResourceRightsRepository;
 use Claroline\CoreBundle\Repository\ResourceShortcutRepository;
 use Claroline\CoreBundle\Repository\RoleRepository;
-use Claroline\CoreBundle\Manager\RightsManager;
-use Claroline\CoreBundle\Manager\RoleManager;
-use Claroline\CoreBundle\Manager\IconManager;
 use Claroline\CoreBundle\Manager\Exception\MissingResourceNameException;
 use Claroline\CoreBundle\Manager\Exception\ResourceTypeNotFoundException;
 use Claroline\CoreBundle\Manager\Exception\RightsException;
@@ -36,6 +33,7 @@ use Claroline\CoreBundle\Event\StrictDispatcher;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Claroline\CoreBundle\Persistence\ObjectManager;
 use Claroline\CoreBundle\Library\Utilities\ClaroUtilities;
+use Claroline\CoreBundle\Library\Security\Utilities;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -67,6 +65,8 @@ class ResourceManager
     private $om;
     /** @var ClaroUtilities */
     private $ut;
+    /** @var Utilities */
+    private $secut;
 
     /**
      * Constructor.
@@ -77,7 +77,8 @@ class ResourceManager
      *     "rightsManager" = @DI\Inject("claroline.manager.rights_manager"),
      *     "dispatcher"    = @DI\Inject("claroline.event.event_dispatcher"),
      *     "om"            = @DI\Inject("claroline.persistence.object_manager"),
-     *     "ut"            = @DI\Inject("claroline.utilities.misc")
+     *     "ut"            = @DI\Inject("claroline.utilities.misc"),
+     *     "secut"         = @DI\Inject("claroline.security.utilities")
      * })
      */
     public function __construct (
@@ -86,7 +87,8 @@ class ResourceManager
         RightsManager $rightsManager,
         StrictDispatcher $dispatcher,
         ObjectManager $om,
-        ClaroUtilities $ut
+        ClaroUtilities $ut,
+        Utilities $secut
     )
     {
         $this->resourceTypeRepo = $om->getRepository('ClarolineCoreBundle:Resource\ResourceType');
@@ -100,6 +102,7 @@ class ResourceManager
         $this->dispatcher = $dispatcher;
         $this->om = $om;
         $this->ut = $ut;
+        $this->secut = $secut;
     }
 
     /**
@@ -198,31 +201,39 @@ class ResourceManager
      */
     public function getUniqueName(ResourceNode $node, ResourceNode $parent = null)
     {
-        $children = $this->getSiblings($parent);
-        $name = $node->getName();
-        $arName = explode('~', pathinfo($name, PATHINFO_FILENAME));
-        $baseName = $arName[0];
-        $nbName = 0;
+        $candidateName = $node->getName();
+        $parent = $parent ?: $node->getParent();
+        $sameLevelNodes = $parent ?
+            $parent->getChildren() :
+            $this->resourceNodeRepo->findBy(array('parent' => null));
+        $siblingNames = array();
 
-        if ($children) {
-            foreach ($children as $child) {
-                $arChildName = explode('~', pathinfo($child->getName(), PATHINFO_FILENAME));
-                if ($baseName === $arChildName[0]) {
-                    $nbName++;
-                }
+        foreach ($sameLevelNodes as $levelNode) {
+            if ($levelNode !== $node) {
+                $siblingNames[] = $levelNode->getName();
             }
         }
 
-        return (0 !== $nbName) ?  $baseName.'~'.$nbName.'.'.pathinfo($name, PATHINFO_EXTENSION): $name;
-    }
-
-    public function getSiblings(ResourceNode $parent = null)
-    {
-        if ($parent !== null) {
-            return $parent->getChildren();
+        if (!in_array($candidateName, $siblingNames)) {
+            return $candidateName;
         }
 
-        return $this->resourceNodeRepo->findBy(array('parent' => null));
+        $candidateRoot = pathinfo($candidateName, PATHINFO_FILENAME);
+        $candidateExt = ($ext = pathinfo($candidateName, PATHINFO_EXTENSION)) ? '.' . $ext : '';
+        $candidatePattern = '/^'
+            . preg_quote($candidateRoot)
+            . '~(\d+)'
+            . preg_quote($candidateExt)
+            . '$/';
+        $previousIndex = 0;
+
+        foreach ($siblingNames as $name) {
+            if (preg_match($candidatePattern, $name, $matches) && $matches[1] > $previousIndex) {
+                $previousIndex = $matches[1];
+            }
+        }
+
+        return $candidateRoot . '~' . ++$previousIndex . $candidateExt;
     }
 
     /**
@@ -404,20 +415,17 @@ class ResourceManager
             $this->rightsManager->create($data, $data['role'], $node, false, $resourceTypes);
         }
 
-        $resourceTypes = $this->resourceTypeRepo->findAll();
-
-        /**@todo remove this line and grant edit requests in the resourceManager.*/
         $this->rightsManager->create(
-            31,
-            $this->roleRepo->findOneBy(array('name' => 'ROLE_ADMIN')),
+            0,
+            $this->roleRepo->findOneBy(array('name' => 'ROLE_ANONYMOUS')),
             $node,
             false,
-            $resourceTypes
+            array()
         );
 
         $this->rightsManager->create(
             0,
-            $this->roleRepo->findOneBy(array('name' => 'ROLE_ANONYMOUS')),
+            $this->roleRepo->findOneBy(array('name' => 'ROLE_USER')),
             $node,
             false,
             array()
@@ -841,8 +849,7 @@ class ResourceManager
             $resource = $this->getResourceFromNode($node);
             /**
              * resChild can be null if a shortcut was removed
-             * @todo: fix shortcut delete. If a target is removed, every link to the
-             * target should be removed too.
+             * @todo: fix shortcut delete. If a target is removed, every link to the target should be removed too.
              */
             if ($resource !== null) {
                 if ($node->getClass() !== 'Claroline\CoreBundle\Entity\Resource\ResourceShortcut') {
@@ -863,7 +870,9 @@ class ResourceManager
                     array($node)
                 );
 
-                $this->iconManager->delete($node->getIcon());
+                if ($node->getIcon()) {
+                    $this->iconManager->delete($node->getIcon());
+                }
 
                 /*
                  * If the child isn't removed here aswell, doctrine will fail to remove $resChild
@@ -876,7 +885,10 @@ class ResourceManager
             }
         }
 
-        $this->iconManager->delete($node->getIcon());
+        if ($node->getIcon()) {
+            $this->iconManager->delete($node->getIcon());
+        }
+        
         $this->om->remove($node);
         $this->om->endFlushSuite();
     }
@@ -890,18 +902,18 @@ class ResourceManager
      *
      * @return array
      */
-    public function download(array $nodes)
+    public function download(array $elements)
     {
         $data = array();
 
-        if (count($nodes) === 0) {
+        if (count($elements) === 0) {
             throw new ExportResourceException('No resources were selected.');
         }
 
         $archive = new \ZipArchive();
         $pathArch = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $this->ut->generateGuid() . '.zip';
         $archive->open($pathArch, \ZipArchive::CREATE);
-        $nodes = $this->expandResources($nodes);
+        $nodes = $this->expandResources($elements);
 
         if (count($nodes) === 1) {
             $event = $this->dispatcher->dispatch(
@@ -919,7 +931,11 @@ class ResourceManager
             return $data;
         }
 
-        $currentDir = $nodes[0];
+        if (isset($nodes[0])) {
+            $currentDir = $nodes[0];
+        } else {
+            $archive->addEmptyDir($elements[0]->getName());
+        }
 
         foreach ($nodes as $node) {
 
@@ -1024,6 +1040,8 @@ class ResourceManager
      */
     public function rename(ResourceNode $node, $name)
     {
+        $node->setName($name);
+        $name = $this->getUniqueName($node, $node->getParent());
         $node->setName($name);
         $this->om->persist($node);
         $this->logChangeSet($node);
@@ -1237,6 +1255,16 @@ class ResourceManager
     }
 
     /**
+     * @param AbstractWorkspace $workspace
+     *
+     * @return \Claroline\CoreBundle\Entity\Resource\ResourceNode[]
+     */
+    public function getByWorkspace(AbstractWorkspace $workspace)
+    {
+        return $this->resourceNodeRepo->findBy(array('workspace' => $workspace));
+    }
+
+    /**
      * @param integer[] $ids
      *
      * @return \Claroline\CoreBundle\Entity\Resource\ResourceNode[]
@@ -1284,7 +1312,15 @@ class ResourceManager
         $newNode->setIcon($node->getIcon());
         $newNode->setClass($node->getClass());
         $newNode->setMimeType($node->getMimeType());
-        $this->rightsManager->copy($node, $newNode);
+
+        //if everything happens inside the same workspace, rights are copied
+        if ($newParent->getWorkspace() === $node->getWorkspace()) {
+            $this->rightsManager->copy($node, $newNode);
+        } else {
+            //otherwise we use the parent rights
+            $this->setRights($newNode, $newParent, array());
+        }
+
         $this->om->persist($newNode);
 
         return $newNode;
@@ -1372,5 +1408,22 @@ class ResourceManager
     private function getEncoding()
     {
         return $this->ut->getDefaultEncoding();
+    }
+
+    /**
+     * Returns true of the token owns the workspace of the resource node.
+     *
+     * @param ResourceNode   $node
+     * @param TokenInterface $token
+     *
+     * @return boolean
+     */
+    public function isWorkspaceOwnerOf(ResourceNode $node, TokenInterface $token)
+    {
+        $workspace = $node->getWorkspace();
+        $managerRoleName = 'ROLE_WS_MANAGER_' . $workspace->getGuid();
+
+        return in_array($managerRoleName, $this->secut->getRoles($token)) ? true: false;
+
     }
 }
