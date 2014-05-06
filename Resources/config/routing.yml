@@ -64,7 +64,6 @@ claro_content_link:
         _controller: FrameworkBundle:Template:template
         template: 'ClarolineCoreBundle:Home:link.html.twig'
 
-
 claro_authentication:
     resource: "@ClarolineCoreBundle/Controller/AuthenticationController.php"
     type: annotation
@@ -150,13 +149,13 @@ claro_admin:
     type: annotation
 
 claro_admin_home_tab:
-    resource: "@ClarolineCoreBundle/Controller/AdministrationHomeTabController.php"
+    resource: "@ClarolineCoreBundle/Controller/Administration/HomeTabController.php"
     prefix: admin
     type: annotation
 
-claro_admin_tool:
-    resource: "@ClarolineCoreBundle/Controller/Tool/AdministrationToolController.php"
-    prefix: admin
+claro_admin_tool_config:
+    resource: "@ClarolineCoreBundle/Controller/Administration/ToolsController.php"
+    prefix: admin/tools
     type: annotation
 
 claro_resource:
@@ -216,8 +215,15 @@ claro_file:
     type: annotation
     prefix: file
 
-claro_badge:
-    resource: "@ClarolineCoreBundle/Controller/Badge"
+claro_user:
+    resource: "@ClarolineCoreBundle/Controller/UserController.php"
+    type: annotation
+    prefix: user
+
+claro_admin_badge:
+    resource: "@ClarolineCoreBundle/Controller/Administration/BadgeController.php"
+    type: annotation
+    prefix: admin/badge
 
 claro_workspaces_widget:
     resource: "@ClarolineCoreBundle/Controller/Widget/MyWorkspacesWidgetController.php"
@@ -238,6 +244,11 @@ claro_admin_workspaces:
     resource: "@ClarolineCoreBundle/Controller/Administration/WorkspacesController.php"
     type: annotation
 
+claro_admin_roles:
+    prefix: admin/roles
+    resource: "@ClarolineCoreBundle/Controller/Administration/RolesController.php"
+    type: annotation
+
 claro_admin_users:
     prefix: admin/users
     resource: "@ClarolineCoreBundle/Controller/Administration/UsersController.php"
@@ -247,3 +258,26 @@ claro_admin_groups:
     prefix: admin/groups
     resource: "@ClarolineCoreBundle/Controller/Administration/GroupsController.php"
     type: annotation
+
+claro_admin_logs:
+    prefix: admin/logs
+    resource: "@ClarolineCoreBundle/Controller/Administration/LogsController.php"
+    type: annotation
+
+claro_admin_analytics:
+    prefix: admin/analytics
+    resource: "@ClarolineCoreBundle/Controller/Administration/AnalyticsController.php"
+    type: annotation
+
+claro_admin_workspace_registration:
+    prefix: admin/workspace/registration
+    resource: "@ClarolineCoreBundle/Controller/Administration/WorkspaceRegistrationController.php"
+    type: annotation
+
+claro_admin_plugins:
+    resource: "@ClarolineCoreBundle/Controller/Administration/PluginsController.php"
+    prefix: admin/plugins
+    type: annotation
+
+claro_badge:
+    resource: "@ClarolineCoreBundle/Controller/Badge"

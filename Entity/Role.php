@@ -94,7 +94,10 @@ class Role implements RoleInterface
     protected $resourceRights;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Claroline\CoreBundle\Entity\Workspace\AbstractWorkspace", inversedBy="roles")
+     * @ORM\ManyToOne(
+     *     targetEntity="Claroline\CoreBundle\Entity\Workspace\AbstractWorkspace",
+     *     inversedBy="roles"
+     * )
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $workspace;
@@ -117,7 +120,7 @@ class Role implements RoleInterface
      * cannot be modified by this setter.
      *
      * @param string $name
-     *                     @throw RuntimeException if the name isn't prefixed by 'ROLE_' or if the role is platform-wide
+     * @throws \RuntimeException if the name isn't prefixed by 'ROLE_' or if the role is platform-wide
      */
     public function setName($name)
     {

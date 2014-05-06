@@ -11,6 +11,7 @@
 
 namespace Claroline\CoreBundle\Manager;
 
+use Claroline\CoreBundle\Entity\AbstractRoleSubject;
 use JMS\DiExtraBundle\Annotation as DI;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Templating\EngineInterface;
@@ -81,7 +82,7 @@ class MailManager
     {
         $hash = $user->getResetPasswordHash();
         $link = $this->router->generate('claro_security_reset_password', array('hash' => $hash), true);
-        $subject = $this->translator->trans('reset_pwd', array(), 'platform');
+        $subject = $this->translator->trans('resetting_your_password', array(), 'platform');
 
         $body = $this->container->get('templating')->render(
             'ClarolineCoreBundle:Mail:forgotPassword.html.twig', array('user' => $user, 'link' => $link)
@@ -133,6 +134,8 @@ class MailManager
     public function send($subject, $body, array $users, $from = null)
     {
         if ($this->isMailerAvailable()) {
+            $to = [];
+
             $layout = $this->contentManager->getTranslatedContent(array('type' => 'claro_mail_layout'));
 
             $fromEmail = ($from === null) ? $this->ch->getParameter('support_email') : $from->getMail();
@@ -149,10 +152,18 @@ class MailManager
             if ($from) {
                 $body = str_replace('%first_name%', $from->getFirstName(), $body);
                 $body = str_replace('%last_name%', $from->getLastName(), $body);
+            } else {
+                $body = str_replace('%first_name%', $this->ch->getParameter('name'), $body);
+                $body = str_replace('%last_name%', '', $body);
             }
 
             foreach ($users as $user) {
-                $to[] = $user->getMail();
+
+                $mail = $user->getMail();
+
+                if (filter_var($mail, FILTER_VALIDATE_EMAIL)) {
+                    $to[] = $mail;
+                }
             }
 
             $message = \Swift_Message::newInstance()
@@ -161,7 +172,7 @@ class MailManager
                 ->setBody($body, 'text/html');
 
             if (count($to) > 1) {
-                $message->setCc($to);
+                $message->setBcc($to);
             } else {
                 $message->setTo($to);
             }

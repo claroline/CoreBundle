@@ -56,7 +56,8 @@ class PlatformConfigurationHandler
         'session_db_password' => null,
         'facebook_client_id' => null,
         'facebook_client_secret' => null,
-        'facebook_client_active' => null
+        'facebook_client_active' => null,
+        'form_captcha' => true
     );
 
     /**
@@ -129,6 +130,7 @@ class PlatformConfigurationHandler
         $config->setMailerUsername($this->parameters['mailer_username']);
         $config->setMailerPassword($this->parameters['mailer_password']);
         $config->setMailerAuthMode($this->parameters['mailer_auth_mode']);
+        $config->setMailerPort($this->parameters['mailer_port']);
         $config->setGoogleMetaTag($this->parameters['google_meta_tag']);
         $config->setRedirectAfterLogin($this->parameters['redirect_after_login']);
         $config->setSessionStorageType($this->parameters['session_storage_type']);
@@ -142,6 +144,7 @@ class PlatformConfigurationHandler
         $config->setFacebookClientId($this->parameters['facebook_client_id']);
         $config->setFacebookClientSecret($this->parameters['facebook_client_secret']);
         $config->setFacebookClientActive($this->parameters['facebook_client_active']);
+        $config->setFormCaptcha($this->parameters['form_captcha']);
 
         return $config;
     }

@@ -6,7 +6,7 @@
                 'twitter_bootstrap_translated',
                 {
                     'proximity' : 1,
-                    'routeName': 'claro_admin_user_list',
+                    'routeName': 'claro_admin_workspaces_management',
                     'routeParams': {'max': max, 'order': order}
                 }
             )
@@ -18,24 +18,30 @@
                 'twitter_bootstrap_translated',
                 {
                     'proximity' : 1,
-                    'routeName': 'claro_admin_user_list_search',
+                    'routeName': 'claro_admin_workspaces_management_search',
                     'routeParams': {'search': search, 'max': max, 'order': order}
                 }
             )
         }}
     {% endif %}
 {% endmacro %}
-
 {% macro displayControls() %}
     {% if app.user %}
         <button class="btn btn-default action-button" data-action="remove">
             <i class="icon-trash"></i>
             {{ 'delete'|trans({}, 'platform') }}
         </button>
-        <a href="{{ path('claro_workspace_creation_form') }}" class="btn btn-default action-button" >
-            <i class="icon-book"></i>
+        <a href="{{ path('claro_workspace_creation_form') }}" class="btn btn-default action-button" role="button">
+            <i class="icon-pencil"></i>
             {{ 'create'|trans({}, 'platform') }}
         </a>
+    {% endif %}
+{% endmacro %}
+{% macro sortUrl(max, search, order, direction) %}
+    {% if search == '' %}
+        {{ path('claro_admin_workspaces_management', {'max': max, 'order': order , 'direction': direction}) }}
+    {% else %}
+        {{ path('claro_admin_workspaces_management_search', {'search': search, 'max': max, 'order': order}) }}
     {% endif %}
 {% endmacro %}
 
@@ -56,7 +62,7 @@
                 'href': path('claro_admin_parameters_index')
             },
             {
-                'name': 'parameters'|trans({}, 'platform'),
+                'name': 'workspaces_management'|trans({}, 'platform'),
                 'href': ''
             }
         ])
@@ -92,8 +98,8 @@
                     {{ renderPager(search, pager, max, order) }}
                 {% endif %}
             </div>
-            <div class="col-md-4" style="margin-top: 15px;">
-                <div class="input-group margin-md">
+            <div class="col-md-4 margin-top-md margin-bottom-md">
+                <div class="input-group">
                     <select class="form-control input-md" id="max-select">
                         <option>20</option>
                         <option>50</option>
@@ -112,12 +118,13 @@
                     <tr>
                         <th><input type="checkbox" name="all" id="check-all-items"></th>
                         <th>{{ 'id'|trans({}, 'platform') }}</th>
-                        <th>{{ 'name'|trans({}, 'platform') }}</th>
-                        <th>{{ 'code'|trans({}, 'platform') }}</th>
-                        <th>{{ 'creator'|trans({}, 'platform') }}</th>
-                        <th>{{ 'visibility'|trans({}, 'platform') }}</th>
-                        <th>{{ 'public_registration'|trans({}, 'platform') }}</th>
+                        <th><a href="{{ sortUrl(max, search, 'name', direction) }}">{{ 'name'|trans({}, 'platform') }} </a></th>
+                        <th><a href="{{ sortUrl(max, search, 'code', direction) }}"> {{ 'code'|trans({}, 'platform') }} </a></th>
+                        <th><a href="{{ sortUrl(max, search, 'creator', direction) }}"> {{ 'creator'|trans({}, 'platform') }} </a></th>
+                        <th><a href="{{ sortUrl(max, search, 'visibility', direction) }}"> {{ 'visibility'|trans({}, 'platform') }} </a></th>
+                        <th><a href="{{ sortUrl(max, search, 'displayble', direction) }}"> {{ 'public_registration'|trans({}, 'platform') }} </a></th>
                         <th>{{ 'edit'|trans({}, 'platform') }}</th>
+                        <th>date </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -170,6 +177,14 @@
                             <a href="{{ path('claro_workspace_edit_form', {'workspace':w.getId() }) }}">
                                 <i class="icon-pencil"></i>
                             </a>
+                        </td>
+                        <td>
+
+                            {% if w.getCreationDate() is not null %}
+                                {{ w.getCreationDate()|intl_date_format}}
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

@@ -49,7 +49,7 @@ class Validator
      * @param Rulable $rulable
      * @param User    $user
      *
-     * @return bool|Log[]
+     * @return array
      */
     public function validate(Rulable $rulable, User $user)
     {
@@ -65,27 +65,23 @@ class Validator
      */
     protected function validateRules($rules, User $user, array $restriction)
     {
-        $return    = array();
-        $isChecked = true;
+        $return = array('validRules' => 0, 'rules' => array());
 
         if (0 < count($rules)) {
             foreach ($rules as $rule) {
                 $rule->setUser($user);
                 $checkedLogs = $this->validateRule($rule, $restriction);
 
-                if (false === $checkedLogs) {
-                    $isChecked = false;
-                } else {
-                    foreach ($checkedLogs as $checkedLog) {
-                        $return[] = $checkedLog;
-                    }
+                if (false !== $checkedLogs) {
+                    $return['validRules']++;
+                    $return['rules'][] = array(
+                        'rule' => $rule, 'logs' => $checkedLogs
+                    );
                 }
             }
-        } else {
-            $isChecked = false;
         }
 
-        return (false === $isChecked) ? false : $return;
+        return $return;
     }
 
     /**
@@ -96,7 +92,6 @@ class Validator
      */
     public function validateRule(Rule $rule, array $restrictions = array())
     {
-        $isValid            = true;
         /** @var \Claroline\CoreBundle\Rule\Constraints\AbstractConstraint[] $usedConstraints */
         $usedConstraints    = array();
         /** @var \Claroline\CoreBundle\Rule\Constraints\AbstractConstraint[] $existedConstraints */
@@ -116,15 +111,20 @@ class Validator
             }
         }
 
+        $validatedConstraints = 0;
+        $nbConstraints        = count($usedConstraints);
+
         $associatedLogs = $this->getAssociatedLogs($usedConstraints, $restrictions);
 
         foreach ($usedConstraints as $usedConstraint) {
             $usedConstraint->setAssociatedLogs($associatedLogs);
 
-            $isValid = $isValid && $usedConstraint->validate();
+            if ($usedConstraint->validate()) {
+                $validatedConstraints++;
+            }
         }
 
-        return ($isValid) ? $associatedLogs : $isValid;
+        return ($validatedConstraints === $nbConstraints) ? $associatedLogs : false;
     }
 
     /**
@@ -136,7 +136,7 @@ class Validator
     protected function buildQuery(array $constraints, array $restrictions = null)
     {
         /** @var \Doctrine\ORM\QueryBuilder $queryBuilder */
-        $queryBuilder = $queryBuilder = $this->logRepository->defaultQueryBuilderForBadge();
+        $queryBuilder = $this->logRepository->defaultQueryBuilderForBadge();
 
         foreach ($restrictions as $key => $restriction) {
             $queryBuilder

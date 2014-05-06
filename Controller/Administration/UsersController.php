@@ -17,7 +17,9 @@ use Claroline\CoreBundle\Form\Factory\FormFactory;
 use Claroline\CoreBundle\Manager\LocaleManager;
 use Claroline\CoreBundle\Manager\MailManager;
 use Claroline\CoreBundle\Manager\RoleManager;
+use Claroline\CoreBundle\Manager\ToolManager;
 use Claroline\CoreBundle\Manager\UserManager;
+use Claroline\CoreBundle\Manager\WorkspaceManager;
 use JMS\DiExtraBundle\Annotation as DI;
 use JMS\SecurityExtraBundle\Annotation as SEC;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
@@ -26,11 +28,9 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\SecurityContextInterface;
 
-/**
- * @DI\Tag("security.secure_service")
- * @SEC\PreAuthorize("hasRole('ADMIN')")
- */
 class UsersController extends Controller
 {
     private $userManager;
@@ -39,40 +39,53 @@ class UsersController extends Controller
     private $formFactory;
     private $request;
     private $mailManager;
+    private $workspaceManager;
     private $localeManager;
     private $router;
+    private $toolManager;
+    private $userAdminTool;
 
     /**
      * @DI\InjectParams({
      *     "userManager"        = @DI\Inject("claroline.manager.user_manager"),
+     *     "workspaceManager"   = @DI\Inject("claroline.manager.workspace_manager"),
      *     "roleManager"        = @DI\Inject("claroline.manager.role_manager"),
      *     "eventDispatcher"    = @DI\Inject("claroline.event.event_dispatcher"),
      *     "formFactory"        = @DI\Inject("claroline.form.factory"),
      *     "request"            = @DI\Inject("request"),
      *     "mailManager"        = @DI\Inject("claroline.manager.mail_manager"),
      *     "localeManager"      = @DI\Inject("claroline.common.locale_manager"),
-     *     "router"             = @DI\Inject("router")
+     *     "router"             = @DI\Inject("router"),
+     *     "sc"                 = @DI\Inject("security.context"),
+     *     "toolManager"        = @DI\Inject("claroline.manager.tool_manager")
      * })
      */
     public function __construct(
         UserManager $userManager,
         RoleManager $roleManager,
+        WorkspaceManager $workspaceManager,
         StrictDispatcher $eventDispatcher,
         FormFactory $formFactory,
         Request $request,
         MailManager $mailManager,
         LocaleManager $localeManager,
-        RouterInterface $router
+        RouterInterface $router,
+        SecurityContextInterface $sc,
+        ToolManager $toolManager
     )
     {
-        $this->userManager = $userManager;
-        $this->roleManager = $roleManager;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->formFactory = $formFactory;
-        $this->request = $request;
-        $this->mailManager = $mailManager;
-        $this->localeManager = $localeManager;
-        $this->router = $router;
+        $this->userManager      = $userManager;
+        $this->roleManager      = $roleManager;
+        $this->eventDispatcher  = $eventDispatcher;
+        $this->formFactory      = $formFactory;
+        $this->request          = $request;
+        $this->mailManager      = $mailManager;
+        $this->localeManager    = $localeManager;
+        $this->router           = $router;
+        $this->workspaceManager = $workspaceManager;
+        $this->sc               = $sc;
+        $this->toolManager      = $toolManager;
+        $this->userAdminTool    = $this->toolManager->getAdminToolByName('user_management');
     }
 
     /**
@@ -84,26 +97,26 @@ class UsersController extends Controller
      */
     public function indexAction()
     {
+        $this->checkOpen();
+
         return array();
     }
 
     /**
      * @EXT\Route("/new", name="claro_admin_user_creation_form")
      * @EXT\Method("GET")
-     * @EXT\ParamConverter("currentUser", options={"authenticatedUser" = true})
      * @EXT\Template
      *
      * Displays the user creation form.
      *
-     * @param User $currentUser
-     *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function creationFormAction(User $currentUser)
+    public function userCreationFormAction()
     {
-        $roles = $this->roleManager->getPlatformRoles($currentUser);
+        $this->checkOpen();
+        $role = $this->roleManager->getRoleByName('ROLE_USER');
         $form = $this->formFactory->create(
-            FormFactory::TYPE_USER_FULL, array($roles, $this->localeManager->getAvailableLocales())
+            FormFactory::TYPE_USER_FULL, array(array($role), $this->localeManager->getAvailableLocales())
         );
 
         $error = null;
@@ -132,6 +145,8 @@ class UsersController extends Controller
      */
     public function createAction(User $currentUser)
     {
+        $this->checkOpen();
+
         $roles = $this->roleManager->getPlatformRoles($currentUser);
         $form = $this->formFactory->create(
             FormFactory::TYPE_USER_FULL, array($roles, $this->localeManager->getAvailableLocales())
@@ -179,6 +194,8 @@ class UsersController extends Controller
      */
     public function deleteAction(array $users)
     {
+        $this->checkOpen();
+
         foreach ($users as $user) {
             $this->userManager->deleteUser($user);
             $this->eventDispatcher->dispatch('log', 'Log\LogUserDelete', array($user));
@@ -189,19 +206,18 @@ class UsersController extends Controller
 
     /**
      * @EXT\Route(
-     *     "/page/{page}/max/{max}/order/{order}",
+     *     "/page/{page}/max/{max}/order/{order}/direction/{direction}",
      *     name="claro_admin_user_list",
-     *     defaults={"page"=1, "search"="", "max"=50, "order"="id"},
+     *     defaults={"page"=1, "search"="", "max"=50, "order"="id","direction"="ASC"},
      *     options = {"expose"=true}
      * )
      * @EXT\Method("GET")
      * @EXT\Route(
-     *     "/users/page/{page}/search/{search}/max/{max}/order/{order}",
+     *     "/users/page/{page}/search/{search}/max/{max}/order/{order}/direction/{direction}",
      *     name="claro_admin_user_list_search",
-     *     defaults={"page"=1, "max"=50, "order"="id"},
+     *     defaults={"page"=1, "max"=50, "order"="id","direction"="ASC"},
      *     options = {"expose"=true}
      * )
-     * @EXT\Method("GET")
      * @EXT\Template
      * @EXT\ParamConverter(
      *     "order",
@@ -215,16 +231,20 @@ class UsersController extends Controller
      * @param string  $search
      * @param integer $max
      * @param string  $order
+     * @param string  $direction
      *
      * @return array
      */
-    public function listAction($page, $search, $max, $order)
+    public function listAction($page, $search, $max, $order, $direction)
     {
+        $this->checkOpen();
         $pager = $search === '' ?
-            $this->userManager->getAllUsers($page, $max, $order) :
-            $this->userManager->getUsersByName($search, $page, $max, $order);
+            $this->userManager->getAllUsers($page, $max, $order, $direction):
+            $this->userManager->getUsersByName($search, $page, $max, $order, $direction);
+        
+        $direction = $direction === 'DESC' ? 'ASC' : 'DESC';
 
-        return array('pager' => $pager, 'search' => $search, 'max' => $max, 'order' => $order);
+        return array('pager' => $pager, 'search' => $search, 'max' => $max, 'order' => $order, 'direction' => $direction);
     }
 
     /**
@@ -236,7 +256,7 @@ class UsersController extends Controller
      * )
      * @EXT\Method("GET")
      * @EXT\Route(
-     *     "/users/page/{page}/pic/search/{search}",
+     *     "/page/{page}/pic/search/{search}",
      *     name="claro_admin_user_list_search_pics",
      *     defaults={"page"=1},
      *     options = {"expose"=true}
@@ -253,8 +273,9 @@ class UsersController extends Controller
      */
     public function listPicsAction($page, $search)
     {
+        $this->checkOpen();
         $pager = $search === '' ?
-            $this->userManager->getAllUsers($page) :
+            $this->userManager->getAllUsers($page):
             $this->userManager->getUsersByName($search, $page);
 
         return array('pager' => $pager, 'search' => $search);
@@ -269,9 +290,34 @@ class UsersController extends Controller
      */
     public function importFormAction()
     {
+        $this->checkOpen();
         $form = $this->formFactory->create(FormFactory::TYPE_USER_IMPORT);
 
         return array('form' => $form->createView());
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/user/{user}/workspaces/page/{page}/max/{max}",
+     *     name="claro_admin_user_workspaces",
+     *     defaults={"page"=1, "max"=50},
+     *     options={"expose"=true}
+     * )
+     * @EXT\Method("GET")
+     * @EXT\Template
+     *
+     * @param User    $user
+     * @param integer $page
+     * @param integer $max
+     *
+     * @return array
+     */
+    public function userWorkspaceListAction(User $user, $page, $max)
+    {
+        $this->checkOpen();
+        $pager = $this->workspaceManager->getOpenableWorkspacesByRolesPager($user->getRoles(), $page, $max);
+
+        return array('user' => $user, 'pager' => $pager, 'page' => $page, 'max' => $max);
     }
 
     /**
@@ -283,6 +329,7 @@ class UsersController extends Controller
      */
     public function importAction()
     {
+        $this->checkOpen();
         $form = $this->formFactory->create(FormFactory::TYPE_USER_IMPORT);
         $form->handleRequest($this->request);
 
@@ -300,5 +347,14 @@ class UsersController extends Controller
         }
 
         return array('form' => $form->createView());
+    }
+
+    private function checkOpen()
+    {
+        if ($this->sc->isGranted('OPEN', $this->userAdminTool)) {
+            return true;
+        }
+
+        throw new AccessDeniedException();
     }
 }

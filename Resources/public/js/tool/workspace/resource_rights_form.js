@@ -45,6 +45,9 @@
             case 'platform':
                 simpleRights.platform(element);
                 break;
+            case 'recursive-option':
+                simpleRights.recursive(element);
+                break;
         }
     });
 
@@ -59,7 +62,7 @@
 
     $('body').on('click', '#submit-default-rights-form-button', function (e) {
         e.preventDefault();
-        var formAction = $(e.currentTarget.parentElement.parentElement).attr('action');
+        var formAction = $(e.currentTarget).parents('form').first().attr('action');
         var form = document.getElementById('node-rights-form');
         var formData = new FormData(form);
         e.preventDefault();
@@ -100,7 +103,7 @@
         });
     });
 
-    $('.role-item').live('click', function (event) {
+    $('body').on('click', '.role-item', function (event) {
         event.preventDefault();
         $.ajax({
             url: event.currentTarget.getAttribute('href'),
@@ -112,14 +115,10 @@
                 $('#form-right-wrapper').append(form);
             }
         });
-    });
-
-    $('.res-creation-options').live('click', function (event) {
+    }).on('click', '.res-creation-options', function (event) {
         event.preventDefault();
         modal.fromUrl(event.currentTarget.getAttribute('href'));
-    });
-
-    $('.workspace-role-item').live('click', function (event) {
+    }).on('click', '.workspace-role-item', function (event) {
         event.preventDefault();
         $.ajax({
             context: this,

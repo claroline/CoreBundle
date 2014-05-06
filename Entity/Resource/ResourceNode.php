@@ -43,7 +43,7 @@ class ResourceNode
      *     inversedBy="abstractResources",
      *     cascade={"persist"}
      * )
-     * @ORM\JoinColumn(onDelete="CASCADE")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      */
     protected $license;
 
@@ -84,7 +84,7 @@ class ResourceNode
      *     targetEntity="Claroline\CoreBundle\Entity\Resource\ResourceIcon",
      *     cascade={"persist"}
      * )
-     * @ORM\JoinColumn(onDelete="CASCADE")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      */
     protected $icon;
 
@@ -189,6 +189,7 @@ class ResourceNode
     public function __construct()
     {
         $this->rights = new ArrayCollection();
+        $this->children = new ArrayCollection();
     }
 
     /**

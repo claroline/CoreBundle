@@ -16,6 +16,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 use Claroline\CoreBundle\Entity\User;
 use Claroline\CoreBundle\Entity\Group;
 use Claroline\CoreBundle\Entity\Message;
+use Claroline\CoreBundle\Entity\AbstractRoleSubject;
 use Claroline\CoreBundle\Persistence\ObjectManager;
 use Claroline\CoreBundle\Pager\PagerFactory;
 
@@ -137,10 +138,8 @@ class MessageManager
             $workspaceReceivers = $this->workspaceRepo->findWorkspacesByCode($workspaceCodes);
         }
 
-        $message->setSender($sender);
-
-        if (null !== $parent) {
-            $message->setParent($parent);
+        if (null !== $message->getParent()) {
+            $message->setParent($message->getParent());
         }
 
         $this->om->persist($message);
@@ -189,12 +188,17 @@ class MessageManager
             $userMessage->setMessage($message);
             $this->om->persist($userMessage);
 
-            if ($user->isMailNotified()) {
+            if ($filteredUser->isMailNotified()) {
                 $mailNotifiedUsers[] = $filteredUser;
             }
         }
 
-        $this->mailManager->send($message->getObject(), $message->getContent(), $mailNotifiedUsers );
+        $this->mailManager->send(
+            $message->getObject(),
+            $message->getContent(),
+            $mailNotifiedUsers,
+            $message->getSender()
+        );
         $this->om->flush();
 
         return $message;
@@ -308,59 +312,15 @@ class MessageManager
     }
 
     /**
-     * Generates a query string containing the list of user ids in a group.
-     *
-     * @param \Claroline\CoreBundle\Entity\Group $group
-     *
-     * @return string
-     */
-    public function generateGroupQueryString(Group $group)
-    {
-        $users = $this->userRepo->findByGroup($group);
-        $queryString = '?';
-
-        for ($i = 0, $count = count($users); $i < $count; $i++) {
-            if ($i > 0) {
-                $queryString .= "&";
-            }
-
-            $queryString .= "ids[]={$users[$i]->getId()}";
-        }
-
-        return $queryString;
-    }
-
-    /**
-     * Generates a query string containing the list of user ids in a group.
-     *
-     * @param \Claroline\CoreBundle\Entity\Workspace\AbstractWorkspace $workspace
-     *
-     * @return string
-     */
-    public function generateWorkspaceQueryString(AbstractWorkspace $workspace)
-    {
-        $users = $this->userRepo->findByWorkspaceWithUsersFromGroup($workspace);
-        $queryString = '?';
-
-        for ($i = 0, $count = count($users); $i < $count; $i++) {
-            if ($i > 0) {
-                $queryString .= "&";
-            }
-
-            $queryString .= "ids[]={$users[$i]->getId()}";
-        }
-
-        return $queryString;
-    }
-
-    /**
      * Generates a string containing the usernames from a list of users.
      *
      * @param \Claroline\CoreBundle\Entity\User[] $receivers
+     * @param \Claroline\CoreBundle\Entity\Group[] $groups
+     * @param \Claroline\CoreBundle\Entity\Workspace[] $workspaces
      *
      * @return string
      */
-    public function generateStringTo(array $receivers)
+    public function generateStringTo(array $receivers, array $groups, array $workspaces)
     {
         $usernames = array();
 
@@ -368,7 +328,19 @@ class MessageManager
             $usernames[] = $receiver->getUsername();
         }
 
-        return implode(';', $usernames);
+        $string = implode(';', $usernames);
+
+        foreach ($groups as $group) {
+            $el = '{' . $group->getName() .'}';
+            $string .= $string === '' ? $el: ';' . $el;
+        }
+
+        foreach ($workspaces as $workspace) {
+            $el = '[' . $workspace->getCode() .']';
+            $string .= $string === '' ? $el: ';' . $el;
+        }
+
+        return $string;
     }
 
     public function getUserMessagesBy(array $array)
@@ -390,5 +362,23 @@ class MessageManager
         }
 
         $this->om->flush();
+    }
+
+    public function sendMessageToAbstractRoleSubject(AbstractRoleSubject $subject, $content, $object, $sender = null)
+    {
+        $users = array();
+
+        if ($subject instanceof \Claroline\CoreBundle\Entity\User) {
+            $users[] = $subject;
+        }
+
+        if ($subject instanceof \Claroline\CoreBundle\Entity\Group) {
+            foreach ($subject->getUsers() as $user) {
+                $users[] = $user;
+            }
+        }
+
+        $message = $this->create($content, $object, $users, $sender);
+        $this->send($message);
     }
 }
