@@ -309,10 +309,10 @@ class FileListener implements ContainerAwareInterface
         if ($archive->open($archivepath) === TRUE) {
             $archive->extractTo($extractPath);
             $archive->close();
-            $this->om->startFlushSuite();
+            //$this->om->startFlushSuite();
             $perms = $this->container->get('claroline.manager.rights_manager')->getCustomRoleRights($root);
             $roots = $this->uploadDir($extractPath, $root, $perms);
-            $this->om->endFlushSuite();
+            //$this->om->endFlushSuite();
 
             return $roots;
         } else {
