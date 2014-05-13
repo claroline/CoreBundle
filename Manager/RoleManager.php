@@ -200,7 +200,6 @@ class RoleManager
     {
         if (!$user->hasRole($role->getName())) {
             $user->addRole($role);
-            $this->userRoleCreationManager->createUserRoleCreation($user, $role);
             $this->associateRole($user, $role);
         }
     }
