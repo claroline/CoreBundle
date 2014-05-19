@@ -284,6 +284,11 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * @ORM\OneToOne(targetEntity="UserPublicProfilePreferences", mappedBy="user", cascade={"all"})
      */
     protected $publicProfilePreferences;
+    
+    /**
+     * @ORM\Column(name="exchange_token", type="string", unique=true)
+     */
+    protected $exchangeToken;
 
     public function __construct()
     {
@@ -297,6 +302,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
         $this->userBadges        = new ArrayCollection();
         $this->issuedBadges      = new ArrayCollection();
         $this->badgeClaims       = new ArrayCollection();
+        $this->generateNewToken();
     }
 
     /**
@@ -638,6 +644,12 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
             }
         }
     }
+    
+    public function generateNewToken()
+    {
+        //TODO ne devrait pouvoir être effectué qu'une seule fois !
+        $this->exchangeToken = hash("sha256", $this->username.$this->creationDate->format('Y-m-d H:i:s').rand());
+    }
 
     /**
      * Replace the old platform role of a user by a new one.
@@ -957,6 +969,16 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
         }
     }
     
+    public function getExchangeToken()
+    {
+        return $this->exchangeToken;
+    }
+    
+    public function setExchangeToken(string $token)
+    {
+        $this->exchangeToken = $token;
+    }
+    
     public function getUserAsTab()
     {
         return array(
@@ -979,7 +1001,8 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
                 'is_mail_notified' => $this->isMailNotified,
                 'last_uri' => $this->lastUri,
                 'public_url' => $this->publicUrl,
-                'has_tuned_public_url' => $this->hasTunedPublicUrl
+                'has_tuned_public_url' => $this->hasTunedPublicUrl,
+                'token' => $this->exchangeToken
         );
     }
 }
