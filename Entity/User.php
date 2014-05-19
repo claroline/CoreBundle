@@ -956,4 +956,30 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
             $context->addViolationAt('publicUrl', 'public_profile_url_not_valid', array(), null);
         }
     }
+    
+    public function getUserAsTab()
+    {
+        return array(
+                "id" => $this->id,
+                "first_name" => $this->firstName,
+                "last_name" => $this->lastName,
+                'username' => $this->username,
+                'password'=>$this->password,
+                'salt'=> $this->salt,
+                'phone' => $this->phone,
+                'mail' => $this->mail,
+                'administrative_code' => $this->administrativeCode,
+                'creation_date' => $this->created,
+                'hash_time' => $this->hashTime,
+                'picture' => $this->picture,
+                'description' => $this->description,
+                'locale' => $this->locale,
+                'hasAceptedTerms' => $this->hasAcceptedTerms,
+                'is_enabled' => $this->isEnabled,
+                'is_mail_notified' => $this->isMailNotified,
+                'last_uri' => $this->lastUri,
+                'public_url' => $this->publicUrl,
+                'has_tuned_public_url' => $this->hasTunedPublicUrl
+        );
+    }
 }
