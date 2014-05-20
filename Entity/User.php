@@ -648,7 +648,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
     public function generateNewToken()
     {
         //TODO ne devrait pouvoir être effectué qu'une seule fois !
-        $this->exchangeToken = hash("sha256", $this->username.$this->creationDate->format('Y-m-d H:i:s').rand());
+        $this->exchangeToken = hash("sha256", $this->username.time().rand());
     }
 
     /**
@@ -974,7 +974,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
         return $this->exchangeToken;
     }
     
-    public function setExchangeToken(string $token)
+    public function setExchangeToken($token)
     {
         $this->exchangeToken = $token;
     }
