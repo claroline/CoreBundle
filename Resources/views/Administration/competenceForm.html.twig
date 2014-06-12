@@ -1,0 +1,33 @@
+{% extends "ClarolineCoreBundle:Administration:layout.html.twig" %}
+
+{% block title %}{{ 'competence' | trans({}, 'platform') | striptags | raw }}{% endblock %}
+
+{% block content %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{ "competence" | trans({}, "platform" )}}</h3>
+        </div>
+       {% if cpt is defined %}
+        	{{ cpt.getName() }} 
+        	{% set route = path('claro_admin_competence_add_sub', {competenceId: cpt.getId(), rootId: root.getId() }) %}
+       {% else %}
+       		{% set route = path('claro_admin_competence_add') %}	
+       {% endif %}
+        <form novalidate="novalidate"
+              action="{{ route }}"
+              method="post" {{ form_enctype(form) }}
+              id="generic-form"
+              class="form-horizontal">
+            <div class="panel-body">
+                {{ form_widget(form) }}
+                {{ form_rest(form) }}
+                {{ form_errors(form) }}
+            </div>
+            <div class="panel-footer">
+                <button type="submit" class="btn btn-primary">{{ 'ok'|trans({}, 'platform') }}</button>
+            </div>
+        </form>
+        <a href="{{path('claro_admin_competence_delete', {competenceId:cpt.getId()})}}" class="btn btn-primary">{{ 'delete'|trans({}, 'platform') }}</a>
+        <a href="{{path('claro_admin_competence_link_form', {competenceId:cpt.getId(), rootId: root.getId()})}}" class="btn btn-primary">{{ 'link'|trans({}, 'platform') }}</a>
+    </div>
+{% endblock %}

@@ -259,6 +259,11 @@ claro_admin_groups:
     resource: "@ClarolineCoreBundle/Controller/Administration/GroupsController.php"
     type: annotation
 
+claro_admin_competence:
+    prefix: admin/competence
+    resource: "@ClarolineCoreBundle/Controller/Administration/CompetenceController.php"
+    type: annotation
+
 claro_admin_logs:
     prefix: admin/logs
     resource: "@ClarolineCoreBundle/Controller/Administration/LogsController.php"
@@ -281,3 +286,4 @@ claro_admin_plugins:
 
 claro_badge:
     resource: "@ClarolineCoreBundle/Controller/Badge"
+
