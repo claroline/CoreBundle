@@ -106,6 +106,20 @@ abstract class Rule
     protected $user;
 
     /**
+     * @var datetime
+     *
+     * @ORM\Column(name="active_from", type="datetime", nullable=true)
+     */
+    protected $activeFrom;
+
+    /**
+     * @var datetime
+     *
+     * @ORM\Column(name="active_until", type="datetime", nullable=true)
+     */
+    protected $activeUntil;
+
+    /**
      * @return int
      */
     public function getId()
@@ -351,5 +365,45 @@ abstract class Rule
     public function getBadge()
     {
         return $this->badge;
+    }
+
+    /**
+     * @param datetime $activeFrom
+     *
+     * @return Rule
+     */
+    public function setActiveFrom($activeFrom)
+    {
+        $this->activeFrom = $activeFrom;
+
+        return $this;
+    }
+
+    /**
+     * @return datetime
+     */
+    public function getActiveFrom()
+    {
+        return $this->activeFrom;
+    }
+
+    /**
+     * @param datetime $activeUntil
+     *
+     * @return Rule
+     */
+    public function setActiveUntil($activeUntil)
+    {
+        $this->activeUntil = $activeUntil;
+
+        return $this;
+    }
+
+    /**
+     * @return datetime
+     */
+    public function getActiveUntil()
+    {
+        return $this->activeUntil;
     }
 }

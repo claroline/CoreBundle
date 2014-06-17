@@ -1,0 +1,54 @@
+{% extends "ClarolineCoreBundle:Administration:layout.html.twig" %}
+
+{% block title %}{{ parent() ~ ' - ' ~ 'users_management' | trans({}, 'platform') | striptags | raw }}{% endblock %}
+
+{% block breadcrumb %}
+    {{
+        macros.breadcrumbs([
+            {
+                'icon': 'icon-cog',
+                'name': 'administration'|trans({}, 'platform'),
+                'href': path('claro_admin_index')
+            },
+            {
+                'name': 'users_management'|trans({}, 'platform'),
+                'href': path('claro_admin_users_management')
+            },
+            {
+                'name': 'facets'|trans({}, 'platform'),
+                'href': ''
+            }
+        ])
+    }}
+{% endblock %}
+
+{% block section_content %}
+    <div class="panel-heading">
+        <h3 class="panel-title">{{ 'facets'|trans({}, 'platform') }}</h3>
+    </div>
+    <div class="panel-body">
+        <ul class="nav nav-tabs">
+            {% for facet in facets %}
+                {% include "ClarolineCoreBundle:Administration\\Facet:facetTab.html.twigjs" with {'facet': facet} %}
+            {% endfor %}
+            <li id="add-facet-btn">
+                <a class="pointer-hand">
+                    <i class="icon-plus"></i>
+                </a>
+            </li>
+        </ul>
+
+        <div id="facet-pane" class="tab-content">
+            {% for facet in facets %}
+                {% include "ClarolineCoreBundle:Administration\\Facet:facetPane.html.twigjs" with {'facet': facet} %}
+            {% endfor %}
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script type="text/javascript" src="{{ asset('bundles/clarolinecore/js/administration/facet.js') }}"></script>
+{% endblock %}
