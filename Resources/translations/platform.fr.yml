@@ -2,7 +2,6 @@
 Action List: 'Liste des actions'
 Actions per day: 'Nombre d''actions par jour'
 Activate the terms of service in the platform: 'Activez les conditions d''utilisation dans la plate-forme'
-Active: 'Actif'
 Active: Actif
 Add a logo: 'Ajouter un logo'
 An error has occurred, please check if the file size does not exceeds the permitted size: 'Une erreur s''est produite, veuillez vérifier si la taille du fichier ne dépasse pas la taille autorisée'
@@ -33,16 +32,12 @@ Show the name of the platform in the top bar: 'Afficher le nom de la plateforme 
 Show: Afficher
 Terms of service: 'Conditions d''utilisation'
 The form is not valid: 'Le formulaire n''est pas valide'
-This placeholder is optional and will be replaced by the author first name: 'Ce placeholder est optionnel et sera remplacé par le prénom de l''auteur'
 This placeholder is optional and will be replaced by the author first name: Ce placeholder est optionnel et sera remplacé par le prénom de l'auteur
-This placeholder is optional and will be replaced by the author last name: 'Ce placeholder est optionnel et sera remplacé par le nom de l''auteur'
 This placeholder is optional and will be replaced by the author last name: Ce placeholder est optionnel et sera remplacé par le nom de l'auteur
-This placeholder is optional and will be replaced by your platform name: 'Ce placeholder est optionnel et sera remplacé par le nom de la plateforme'
 This placeholder is optional and will be replaced by your platform name: Ce placeholder est optionnel et sera remplacé par le nom de la plateforme
-This placeholder is required and will be replaced by the actual mail content: 'Ce placeholder est requis et sera remplacé par le contenu du mail'
 This placeholder is required and will be replaced by the actual mail content: Ce placeholder est requis et sera remplacé par le contenu du mail
-This variable is optional and will be replaced by your platform name: 'Ce variable est optionnel et sera remplacé par le nom de la plateforme'
-This variable is required and will be replaced by the actual mail content: 'Ce variable est requis et sera replacé par le contenu du mail'
+This variable is optional and will be replaced by your platform name: Ce variable est optionnel et sera remplacé par le nom de la plateforme
+This variable is required and will be replaced by the actual mail content: Ce variable est requis et sera replacé par le contenu du mail
 Upload a file: 'Télécharger un fichier'
 User name: 'Nom d''utilisateur'
 You can redefine the content of the registration mail here: 'Vous pouvez redéfinir ici le contenu du mail d''inscription'
@@ -276,7 +271,6 @@ external_pdo_database: 'Base de données externe (PDO)'
 facebook: Facebook
 facebook_application_validation_error: 'Les identifiants fournis ne sont pas valides.'
 facets: Facettes
-fail_add_user_group_message: Ces utilisateurs n'ont pas pu être ajouté au groupe (vérifiez la limite d'utilisateurs par rôle).
 fail_add_user_group_message: Ces utilisateurs n'ont pas pu être ajoutés au groupe (vérifiez la limite d'utilisateurs par rôle).
 fast_answer: 'Réponse rapide'
 fb_client_id: 'Id de l''application'
@@ -304,7 +298,7 @@ generate_url: 'Inscription publique'
 generate_url_subscription: 'Inscription à l''espace d''activité par un utilisateur'
 generate_url_subscription_anonyme: 'Inscription à l''espace d''activité par un anonyme'
 generate_url_subscription_fail: 'Vous devez d''abord cochez la case de l''inscription publique avant de pouvoir voir l''url'
-generate_url_subscription_sucsess: 'Vous avez été ajouté à l''espace d''activité'
+generate_url_subscription_succsess: 'Vous avez été ajouté à l''espace d''activité'
 get_mail_notifications: 'Je veux recevoir les notifications sur %adress%.'
 grant_access: 'Donner l''accès'
 group: Groupe
@@ -316,7 +310,6 @@ group_form_platformRole: Role
 group_parameter: 'Paramètres du groupe'
 groups: Groupes
 groups_list: 'Liste des groupes'
-groups_per_page: 'Groupes par page'
 groups_per_page: Groupes par page
 groups_registration_in_workspace: 'Inscription des groupes à l''espace d''activités'
 has_been_put_in_category: 'a été placé dans la catégorie'
@@ -372,6 +365,7 @@ link: Lien
 link_outdated: 'le lien n''est plus valide'
 link_workspace: 'Lier un espace d''activités'
 list_groups: 'Lister les groupes'
+list_role: liste des rôles
 list_users: 'Lister les utilisateurs'
 list_workspaces: 'Tous les espaces d''activités'
 lock: Verrouiller
@@ -439,7 +433,6 @@ my_contacts: 'Mes contacts'
 my_favourite_workspaces: 'Mes espaces d''activités favoris'
 my_notes: 'Mes notes'
 my_portfolio: 'Mon portfolio'
-my_profile: 'Mon profil'
 my_profile: Mon profil
 my_resources: 'Mes ressources'
 my_workspace: 'Espace personnel'
@@ -482,6 +475,7 @@ order: Ordre
 organize_admin_tags: 'Organiser les Tags administrateur'
 organize_categories: 'Organiser les catégories'
 organize_private_tags: 'Organiser les Tags personnels'
+orkspace.create: 'Créer un nouvel espace d''activités'
 over_max_length: 'Cette valeur est trop longue'
 owner: Propriétaire
 owner_s: Propriétaire(s)
@@ -613,9 +607,7 @@ rights_management: 'Gestion des droits'
 role: Rôle
 role_creation: 'Création d''un rôle'
 role_edition: 'Modification d''un rôle'
-role_limit_reached: La limite d'utilisateur de type %translationKey% a été atteinte.
 role_limit_reached: La limite d'utilisateurs de type %translationKey% a été atteinte.
-role_list: Liste des roles
 role_list: Liste des rôles
 role_name_type_form_translationKey: Nom
 roles: Rôles
@@ -642,12 +634,10 @@ select_workspaces_for_registration: 'Choisissez les espaces d''activités pour l
 selected_workspaces_for_registration: 'Espaces d''activités sélectionnés pour l''inscription'
 selected_workspaces_will_be_put_in_it: 'Les espaces d''activités sélectionnés y seront disponibles'
 send: Envoyer
-send: envoyer
 send_mail: 'Envoyer un mail'
 send_mail_form_content: Message
 send_mail_form_object: Objet
 send_message: 'Envoyer un message'
-send_message_to_workspace: 'Envoyer un message aux utilisateurs de l''espace'
 send_message_to_workspace: Envoyer un message aux utilisateurs de l'espace
 server: Serveur
 session: Session
@@ -708,7 +698,6 @@ tool: Outil
 tool_form_displayName: 'Nom affiché'
 tool_form_name: Nom
 tool_parameters: 'Paramètres des outils'
-tool_roles_create_directory: 'L''option "Créer un répertoire" vous permet de créer automatiquement un répertoire dédié aux utilisateurs de ce groupe.'
 tool_roles_create_directory: L'option "Créer un répertoire" vous permet de créer automatiquement un répertoire dédié aux utilisateurs de ce groupe.
 tools: Outils
 tools_rights_configuration: 'Configuration des droits sur les outils'
@@ -737,7 +726,6 @@ unable_to_start_smtp: 'La connexion avec le serveur SMTP ne peut pas être étab
 unable_to_start_transport: 'La connexion avec le serveur de mails ne peut pas être établie. Veuillez vérifier que les paramètres que vous avez renseignés sont corrects.'
 unauthorized: 'Vous n''êtes pas autorisé à consulter cette page.'
 unavailable_platform: La plateforme n'est pas disponible.
-unavailable_role: Le role %translationKey% n'est pas utilisable
 unavailable_role: Le rôle %translationKey% n'est pas utilisable
 uncompress_file: Décompresser le fichier si possible
 under_min_length: 'Cette valeur est trop courte'
@@ -756,7 +744,6 @@ url_invalid: 'Le code n''est pas correct, n''essayez pas de changer l''adresse'
 user: Utilisateur
 user_accounts: 'Comptes utilisateur'
 user_creation: 'Création d''un utilisateur'
-user_limit_reached: La limite de création d'utilisateur a été atteinte.
 user_limit_reached: La limite de création d'utilisateurs a été atteinte.
 user_limit_too_low: Il y a déjà %total% %role%(s). La limite %newMax% est trop faible.
 user_parameters: 'Paramètres de l''utilisateur'
@@ -773,7 +760,6 @@ users_import: 'Importer des utilisateurs'
 users_list: 'Liste des utilisateurs'
 users_management: 'Gestion des utilisateurs'
 users_minimum_requirement_msg: 'Les utilisateurs doivent remplir ces conditions: login de 3 caractères, mot de passe de 4 caractères, email valide.'
-users_per_page: 'Utilisateurs par page'
 users_per_page: Utilisateurs par page
 users_registration_in_workspace: 'Inscription des utilisateurs dans l''espace d''activités'
 users_visits: 'Visites des utilisateurs'
@@ -799,7 +785,6 @@ will display the password: 'qui affichera le mot de passe de l''utilisateur'
 will display the user first name: 'qui affichera le prénom de l''utilisateur'
 will display the user last name: 'qui affichera le nom de famille de l''utilisateur'
 will display the username: 'qui affichera le nom de l''utilisateur'
-workspace.create: 'Créer un nouvel espace d''activités'
 workspace.name_not_blank: 'Veuillez spécifier un nom pour ce workspace.'
 workspace: 'Espace d''activités'
 workspace_administration: Administration
@@ -809,12 +794,12 @@ workspace_delete_confirm_message: 'Etes-vous sûr de vouloir supprimer cet espac
 workspace_delete_confirm_title: 'Confirmation de suppression'
 workspace_delete_success_message: 'L''espace d''activités "%workspaceName%" été supprimé.'
 workspace_edit_form_code: Code
-workspace_edit_form_creationDate : 'Date de création'
-workspace_edit_form_creator : 'Créateur de l''espace'
+workspace_edit_form_creationDate: 'Date de création'
+workspace_edit_form_creator: 'Créateur de l''espace'
 workspace_edit_form_description: Description
 workspace_edit_form_displayable: Visible
 workspace_edit_form_name: Nom
-workspace_edit_form_number : Nombre de personnes inscrit à l''espace
+workspace_edit_form_number: Nombre de personnes inscrit à l''espace
 workspace_edit_form_selfRegistration: 'Inscription publique'
 workspace_edit_form_selfUnregistration: 'Désinscription publique'
 workspace_form_code: Code
@@ -828,8 +813,9 @@ workspace_form_type: Type
 workspace_home_tab_creation: 'Création d''un onglet pour les espaces d''activités'
 workspace_home_tab_edition: 'Edition de l''onglet pour les espaces d''activités'
 workspace_home_tabs: 'Onglets pour les espaces d''activités'
-workspace_list: 'Liste des espaces d''activités'
 workspace_list: Liste des espaces d'activités
+workspace_management: 'Le space d''activités a été crée le %creationDate%, par %creator%. Il y a %count% abonné(s).'
+workspace_management_date_null: 'Il y a %count% abonné(s). La date de création et le créateur ne sont pas mentionnés'
 workspace_order_tool_edit_form_name: Nom
 workspace_registration_confirm_title: 'Voulez-vous vous inscrire à cet espace d''activités ?'
 workspace_registration_message: 'Vous avez été inscrit à l''espace d''activité %workspace_name%'
