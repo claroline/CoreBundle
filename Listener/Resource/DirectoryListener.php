@@ -132,33 +132,6 @@ class DirectoryListener
     }
 
     /**
-     * @DI\Observe("open_directory")
-     *
-     * @param OpenResourceEvent $event
-     */
-    public function onOpen(OpenResourceEvent $event)
-    {
-        $dir = $event->getResourceNode();
-        $file = $this->resourceManager->download(array($dir));
-        $response = new StreamedResponse();
-
-        $response->setCallBack(
-            function () use ($file) {
-                readfile($file);
-            }
-        );
-
-        $response->headers->set('Content-Transfer-Encoding', 'octet-stream');
-        $response->headers->set('Content-Type', 'application/force-download');
-        $response->headers->set('Content-Disposition', 'attachment; filename=archive');
-        $response->headers->set('Content-Type', 'application/zip');
-        $response->headers->set('Connection', 'close');
-
-        $event->setResponse($response);
-        $event->stopPropagation();
-    }
-
-    /**
      * @DI\Observe("resource_directory_to_template")
      *
      * @param ExportDirectoryTemplateEvent $event
