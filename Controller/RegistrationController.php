@@ -20,7 +20,6 @@ use Claroline\CoreBundle\Library\Security\PlatformRoles;
 use Claroline\CoreBundle\Manager\UserManager;
 use Claroline\CoreBundle\Manager\RoleManager;
 use Claroline\CoreBundle\Library\HttpFoundation\XmlResponse;
-use Claroline\OfflineBundle\Manager\UserSyncManager;
 use Symfony\Component\HttpFoundation\Response;
 use Claroline\CoreBundle\Library\Configuration\PlatformConfigurationHandler;
 use Symfony\Component\Validator\ValidatorInterface;
@@ -42,7 +41,6 @@ class RegistrationController extends Controller
     private $configHandler;
     private $validator;
     private $roleManager;
-    private $userSyncManager;
 
     /**
      * @DI\InjectParams({
@@ -50,8 +48,7 @@ class RegistrationController extends Controller
      *     "userManager"   = @DI\Inject("claroline.manager.user_manager"),
      *     "roleManager"   = @DI\Inject("claroline.manager.role_manager"),
      *     "configHandler" = @DI\Inject("claroline.config.platform_config_handler"),
-     *     "validator"     = @DI\Inject("validator"),
-     *     "userSyncManager" = @DI\Inject("claroline.manager.user_sync_manager")
+     *     "validator"     = @DI\Inject("validator")
      * })
      */
     public function __construct(
@@ -59,8 +56,7 @@ class RegistrationController extends Controller
         UserManager $userManager,
         PlatformConfigurationHandler $configHandler,
         ValidatorInterface $validator,
-        RoleManager $roleManager,
-        UserSyncManager $userSyncManager
+        RoleManager $roleManager
     )
     {
         $this->request = $request;
@@ -68,7 +64,6 @@ class RegistrationController extends Controller
         $this->configHandler = $configHandler;
         $this->validator = $validator;
         $this->roleManager = $roleManager;
-        $this->userSyncManager = $userSyncManager;
     }
     /**
      * @Route(
@@ -120,9 +115,7 @@ class RegistrationController extends Controller
             $this->get('claroline.manager.user_manager')->createUserWithRole(
                 $user,
                 PlatformRoles::USER
-            );
-            
-            $this->userSyncManager->createUserSynchronized($user);
+            );           
             
             $msg = $this->get('translator')->trans('account_created', array(), 'platform');
             $this->get('request')->getSession()->getFlashBag()->add('success', $msg);
