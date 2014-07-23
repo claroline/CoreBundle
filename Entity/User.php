@@ -987,7 +987,9 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
                 'username' => $this->username,
                 'mail' => $this->mail,
                 'hasAceptedTerms' => $this->hasAcceptedTerms,
-                'token' => $this->exchangeToken
+                'token' => $this->exchangeToken,
+                'ws_perso' => $this->personalWorkspace->getGuid(),
+                'ws_resnode' => ''
         );
     }
 }

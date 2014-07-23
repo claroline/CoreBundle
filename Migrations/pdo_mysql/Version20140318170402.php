@@ -25,6 +25,10 @@ class Version20140318170402 extends AbstractMigration
             ON DELETE SET NULL
         ");
         $this->addSql("
+            ALTER TABLE claro_resource_node 
+            ADD hash_name VARCHAR(50) NOT NULL
+        ");
+        $this->addSql("
             CREATE UNIQUE INDEX UNIQ_A76799FFE1F029B6 ON claro_resource_node (hash_name)
         ");
     }
