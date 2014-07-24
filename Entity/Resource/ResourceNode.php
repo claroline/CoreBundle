@@ -183,6 +183,11 @@ class ResourceNode
      * @ORM\Column(name="class", length=256)
      */
     protected $class;
+    
+    /**
+     * @ORM\Column(name="hash_name", length=50, unique=true)
+     */
+    protected $hashName;
 
     /**
      * @ORM\Column(name="accessible_from", type="datetime", nullable=true)
@@ -559,4 +564,29 @@ class ResourceNode
     {
         return $this->pathForCreationLog;
     }
+    
+    /**
+     * Returns the name of the file actually stored in the file directory (as
+     * opposed to the file original name, which is kept in the entity name
+     * attribute).
+     *
+     * @return string
+     */
+    public function getNodeHashName()
+    {
+        return $this->hashName;
+    }
+
+    /**
+     * Sets the name of the physical file that will be stored in the file directory.
+     * To prevent file name issues (e.g. with special characters), the original
+     * file should be renamed with a standard unique identifier.
+     *
+     * @param string $hashName
+     */
+    public function setNodeHashName($hashName)
+    {
+        $this->hashName = $hashName;
+    }
+    
 }

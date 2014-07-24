@@ -115,7 +115,8 @@ class RegistrationController extends Controller
             $this->get('claroline.manager.user_manager')->createUserWithRole(
                 $user,
                 PlatformRoles::USER
-            );
+            );           
+            
             $msg = $this->get('translator')->trans('account_created', array(), 'platform');
             $this->get('request')->getSession()->getFlashBag()->add('success', $msg);
 

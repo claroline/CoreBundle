@@ -271,6 +271,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * @ORM\Column(name="last_uri", length=255, nullable=true)
      */
     protected $lastUri;
+    
 
     /**
      * @var string
@@ -299,6 +300,12 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * )
      */
     protected $fieldsFacetValue;
+    
+    /**
+     * @ORM\Column(name="exchange_token", type="string", unique=true)
+     */
+    protected $exchangeToken;
+
 
     public function __construct()
     {
@@ -313,6 +320,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
         $this->issuedBadges      = new ArrayCollection();
         $this->badgeClaims       = new ArrayCollection();
         $this->fieldsFacetValue  = new ArrayCollection();
+        $this->generateNewToken();
     }
 
     /**
@@ -679,6 +687,12 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
             }
         }
     }
+    
+    public function generateNewToken()
+    {
+        //TODO ne devrait pouvoir être effectué qu'une seule fois !
+        $this->exchangeToken = hash("sha256", $this->username.time().rand());
+    }
 
     /**
      * Replace the old platform role of a user by a new one.
@@ -1013,5 +1027,29 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
     public function getInitDate()
     {
         return $this->initDate;
+    }
+    
+    public function getExchangeToken()
+    {
+        return $this->exchangeToken;
+    }
+    
+    public function setExchangeToken($token)
+    {
+        $this->exchangeToken = $token;
+    }
+    
+    public function getUserAsTab()
+    {
+        return array(
+                "first_name" => $this->firstName,
+                "last_name" => $this->lastName,
+                'username' => $this->username,
+                'mail' => $this->mail,
+                'hasAceptedTerms' => $this->hasAcceptedTerms,
+                'token' => $this->exchangeToken,
+                'ws_perso' => $this->personalWorkspace->getGuid(),
+                'ws_resnode' => ''
+        );
     }
 }

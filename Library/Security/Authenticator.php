@@ -65,5 +65,20 @@ class Authenticator
 
         return false;
     }
+    
+    public function authenticateWithToken($username, $exchangeToken)
+    {
+        try {
+            $user = $this->userRepo->loadUserByUsername($username);
+        } catch (\Exception $e) {
+            return false;
+        }
+        
+        if($user->getExchangeToken()===$exchangeToken)
+        {
+            return true;
+        }
+        return false;
+    }
 
 }
