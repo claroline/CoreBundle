@@ -44,7 +44,6 @@
         {% if '/icap_notification/'|compareRoute('true') is empty %}
             {% include "IcapNotificationBundle:Notification:dropdownScript.html.twig" with {'notificationElementId':'notification-topbar-item'} %}
         {% endif %}
-        {{ topbar.item({'name':'synchronize', 'href':path('claro_sync'), 'icon':'refresh'}) }}
     {% endblock leftSide %}
 
     {% block rightSide %}
