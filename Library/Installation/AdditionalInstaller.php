@@ -196,6 +196,8 @@ class AdditionalInstaller extends BaseInstaller
             $updater030100->setLogger($this->logger);
             $updater030100->postUpdate();
         }
+        
+        //AJOUT DE CODE DE MIGRATION ELEMENT token
     }
 
     private function setLocale()
