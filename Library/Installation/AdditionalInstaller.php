@@ -197,7 +197,12 @@ class AdditionalInstaller extends BaseInstaller
             $updater030100->postUpdate();
         }
         
-        //AJOUT DE CODE DE MIGRATION ELEMENT token
+         if (version_compare($currentVersion, '3.2.0', '<')) {
+            $this->buildDefaultTemplate();
+            $updater030200 = new Updater\Updater030200($this->container);
+            $updater030200->setLogger($this->logger);
+            $updater030200->postUpdate();
+        }
     }
 
     private function setLocale()
