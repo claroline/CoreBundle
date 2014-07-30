@@ -45,8 +45,10 @@
         <a class="list-group-item" href="{{ path('claro_admin_parameters_oauth_index') }}">
             {{ 'oauth'|trans({}, 'platform') }}
         </a>
-        <a class="list-group-item" href="{{ path('claro_admin_parameters_maintenance') }}">
-            {{ 'maintenance'|trans({}, 'platform') }}
-        </a>
+        {% if configurable_maintenance %}
+            <a class="list-group-item" href="{{ path('claro_admin_parameters_maintenance') }}">
+                {{ 'maintenance'|trans({}, 'platform') }}
+            </a>
+        {% endif %}
     </div>
 {% endblock %}

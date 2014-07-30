@@ -764,6 +764,10 @@ class ParametersController extends Controller
      */
     public function maintenancePageAction()
     {
+        if (!$this->container->getParameter('configurable_maintenance')) {
+            throw new AccessDeniedException();
+        }
+
         $this->checkOpen();
         //the current ip must be whitelisted so it can access the the plateform when it's under maintenance
         $this->ipwlm->addIP($_SERVER['REMOTE_ADDR']);
@@ -778,6 +782,10 @@ class ParametersController extends Controller
      */
     public function startMaintenanceAction()
     {
+        if (!$this->container->getParameter('configurable_maintenance')) {
+            throw new AccessDeniedException();
+        }
+
         $this->checkOpen();
         MaintenanceHandler::enableMaintenance();
 
