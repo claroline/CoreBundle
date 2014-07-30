@@ -799,6 +799,10 @@ class ParametersController extends Controller
      */
     public function endMaintenanceAction()
     {
+        if (!$this->container->getParameter('configurable_maintenance')) {
+            throw new AccessDeniedException();
+        }
+        
         $this->checkOpen();
         MaintenanceHandler::disableMaintenance();
 
