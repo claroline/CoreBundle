@@ -136,7 +136,7 @@ class ParametersController extends Controller
     {
         $this->checkOpen();
 
-        return array();
+        return array('configurable_maintenance' => $this->container->getParameter('configurable_maintenance'));
     }
 
     /**

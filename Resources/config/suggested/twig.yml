@@ -3,7 +3,6 @@ twig:
     strict_variables: %kernel.debug%
     globals:
         chosenRangeKeys: %chosenRangeKeys%
-        configurable_maintenance: %configurable_maintenance%
     form:
         resources:
             - 'ClarolineCoreBundle:Form:date_range.html.twig'
