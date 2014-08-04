@@ -17,6 +17,7 @@ use \Serializable;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\EquatableInterface;
+use Claroline\CoreBundle\Library\Security\PlatformRoles;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use Doctrine\ORM\Mapping as ORM;
@@ -1039,8 +1040,19 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
         $this->exchangeToken = $token;
     }
     
-    public function getUserAsTab()
+    public function isAdmin()
     {
+        $roles = $this->getEntityRoles();
+        foreach ($roles as $role) {
+            if ($role->getName() == PlatformRoles::ADMIN) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public function getUserAsTab()
+    {        
         return array(
                 "first_name" => $this->firstName,
                 "last_name" => $this->lastName,
@@ -1049,7 +1061,8 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
                 'hasAceptedTerms' => $this->hasAcceptedTerms,
                 'token' => $this->exchangeToken,
                 'ws_perso' => $this->personalWorkspace->getGuid(),
-                'ws_resnode' => ''
+                'ws_resnode' => '',
+                'admin' => $this->isAdmin()
         );
     }
 }
