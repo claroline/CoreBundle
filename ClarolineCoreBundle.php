@@ -145,7 +145,7 @@ class ClarolineCoreBundle extends InstallableBundle implements AutoConfigurableI
 
     public function getRequiredFixturesDirectory($environment)
     {
-        return $environment !== 'test' ? 'DataFixtures/Required' : null;
+        return 'DataFixtures/Required';
     }
 
     public function getOptionalFixturesDirectory($environment)
