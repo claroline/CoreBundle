@@ -187,9 +187,9 @@ class RoleManager
      *
      * @throws Exception\AddRoleException
      */
-    public function associateRole(AbstractRoleSubject $ars, Role $role, $sendMail = false)
+    public function associateRole(AbstractRoleSubject $ars, Role $role, $sendMail = false, $force = false)
     {
-        if (!$this->validateRoleInsert($ars, $role)) {
+        if (!$this->validateRoleInsert($ars, $role) && !$force) {
             throw new Exception\AddRoleException('Role cannot be added');
         }
 
@@ -220,11 +220,11 @@ class RoleManager
      * @param \Claroline\CoreBundle\Entity\User $user
      * @param \Claroline\CoreBundle\Entity\Role $role
      */
-    public function associateUserRole(User $user, Role $role)
+    public function associateUserRole(User $user, Role $role, $sendMail = false,  $force = false)
     {
         if (!$user->hasRole($role->getName())) {
             $user->addRole($role);
-            $this->associateRole($user, $role);
+            $this->associateRole($user, $role, $sendMail, $force);
         }
     }
 
