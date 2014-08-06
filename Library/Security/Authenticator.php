@@ -14,6 +14,7 @@ namespace Claroline\CoreBundle\Library\Security;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use Claroline\CoreBundle\Persistence\ObjectManager;
+use Claroline\OfflineBundle\Model\Security\authenticateWithToken;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 
@@ -66,19 +67,22 @@ class Authenticator
         return false;
     }
     
-    public function authenticateWithToken($username, $exchangeToken)
-    {
-        try {
-            $user = $this->userRepo->loadUserByUsername($username);
-        } catch (\Exception $e) {
-            return false;
-        }
+    // public function authenticateWithToken($username, $exchangeToken)
+    // {
+        // try {
+            // $user = $this->userRepo->loadUserByUsername($username);
+        // } catch (\Exception $e) {
+            // return false;
+        // }
         
-        if($user->getExchangeToken()===$exchangeToken)
-        {
-            return true;
-        }
-        return false;
-    }
+        // if($user->getExchangeToken()===$exchangeToken)
+        // {
+            // $token = new UserExchangeToken($user, $exchangeToken);
+            // $this->sc->setToken($token);
+
+            // return true;
+        // }
+        // return false;
+    // }
 
 }
