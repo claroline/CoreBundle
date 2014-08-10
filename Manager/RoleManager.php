@@ -255,8 +255,8 @@ class RoleManager
      */
     public function dissociateUserRole(User $user, Role $role)
     {
-        if ($ars->hasRole($role->getName())) {
-             $this->userRoleCreationManager->removeUserRoleCreation($user, $role);
+        if ($user->hasRole($role->getName())) {
+            $this->userRoleCreationManager->removeUserRoleCreation($user, $role);
             $this->dissociateRole($user, $role);
         }
     }
