@@ -39,7 +39,7 @@ class ClarolineCoreBundle extends InstallableBundle implements AutoConfigurableI
 
     public function supports($environment)
     {
-        return in_array($environment, array('prod', 'dev', 'test'));
+        return in_array($environment, array('prod', 'dev', 'test', 'offline'));
     }
 
     public function getConfiguration($environment)
@@ -97,8 +97,13 @@ class ClarolineCoreBundle extends InstallableBundle implements AutoConfigurableI
         } elseif (isset($simpleConfigs[$bundleClass])) {
             return $config->addContainerResource($this->buildPath($simpleConfigs[$bundleClass]));
         } elseif (isset($envConfigs[$bundleClass])) {
-            if (in_array($environment, array('prod', 'dev', 'test'))) {
-                return $config->addContainerResource($this->buildPath("{$envConfigs[$bundleClass]}_{$environment}"));
+            if (in_array($environment, array('prod', 'dev', 'test', 'offline'))) {
+                $env = $environment;
+                if ($environment === 'offline')
+                {
+                    $env = 'prod';
+                }
+                return $config->addContainerResource($this->buildPath("{$envConfigs[$bundleClass]}_{$env}"));
             }
         } elseif ($bundle instanceof \Bazinga\ExposeTranslationBundle\BazingaExposeTranslationBundle) {
             return $config->addRoutingResource($this->buildPath('bazinga_routing'));
