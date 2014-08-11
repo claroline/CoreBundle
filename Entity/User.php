@@ -1050,19 +1050,4 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
         }
         return false;
     }
-    
-    public function getUserAsTab()
-    {        
-        return array(
-                "first_name" => $this->firstName,
-                "last_name" => $this->lastName,
-                'username' => $this->username,
-                'mail' => $this->mail,
-                'hasAceptedTerms' => $this->hasAcceptedTerms,
-                'token' => $this->exchangeToken,
-                'ws_perso' => $this->personalWorkspace->getGuid(),
-                'ws_resnode' => '',
-                'admin' => $this->isAdmin()
-        );
-    }
 }

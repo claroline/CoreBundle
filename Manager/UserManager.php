@@ -817,4 +817,19 @@ class UserManager
         $this->objectManager->persist($user);
         $this->objectManager->flush();
     }
+    
+    public function getUserAsTab($user)
+    {        
+        return array(
+                "first_name" => $user->getFirstName(),
+                "last_name" => $user->getLastName(),
+                'username' => $user->getUsername(),
+                'mail' => $user->getMail(),
+                'hasAceptedTerms' => $user->hasAcceptedTerms(),
+                'token' => $user->getExchangeToken(),
+                'ws_perso' => $user->getPersonalWorkspace->getGuid(),
+                'ws_resnode' => '',
+                'admin' => $user->isAdmin()
+        );
+    }
 }
