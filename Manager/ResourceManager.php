@@ -134,7 +134,8 @@ class ResourceManager
         Workspace $workspace,
         ResourceNode $parent = null,
         ResourceIcon $icon = null,
-        array $rights = array()
+        array $rights = array(),
+        $nodeHashName = null
     )
     {
         $this->om->startFlushSuite();
@@ -149,7 +150,7 @@ class ResourceManager
         $node->setMimeType($mimeType);
         $node->setName($resource->getName());
         $name = $this->getUniqueName($node, $parent);
-
+        
         $previous = $parent === null ?
             null:
             $this->resourceNodeRepo->findOneBy(array('parent' => $parent, 'next' => null));
@@ -169,6 +170,12 @@ class ResourceManager
             $node->setAccessibleFrom($parent->getAccessibleFrom());
             $node->setAccessibleUntil($parent->getAccessibleUntil());
         }
+        
+        if($nodeHashName == null){
+            $nodeHashName = $this->ut->generateGuid();
+        }
+        $node->setNodeHashName($nodeHashName);
+        
         $resource->setResourceNode($node);
         $this->setRights($node, $parent, $rights);
         $this->om->persist($node);

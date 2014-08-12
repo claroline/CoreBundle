@@ -227,6 +227,7 @@ claro_file:
     resource: "@ClarolineCoreBundle/Controller/FileController.php"
     type: annotation
     prefix: file
+  
 
 claro_user:
     resource: "@ClarolineCoreBundle/Controller/UserController.php"

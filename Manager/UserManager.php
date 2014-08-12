@@ -50,6 +50,7 @@ class UserManager
     private $workspaceManager;
     private $uploadsDirectory;
     private $container;
+    private $resourceNodeRepo;
 
     /**
      * Constructor.
@@ -100,6 +101,7 @@ class UserManager
         $this->validator              = $validator;
         $this->uploadsDirectory       = $uploadsDirectory;
         $this->container              = $container;
+        $this->resourceNodeRepo       = $objectManager->getRepository('ClarolineCoreBundle:Resource\ResourceNode');
     }
 
     /**
@@ -816,5 +818,21 @@ class UserManager
         $user->setInitDate(new \DateTime());
         $this->objectManager->persist($user);
         $this->objectManager->flush();
+    }
+    
+    public function getUserAsTab($user)
+    {        
+        $wsResnode = $this->resourceNodeRepo->findWorkspaceRoot($user->getPersonalWorkspace());
+        return array(
+                "first_name" => $user->getFirstName(),
+                "last_name" => $user->getLastName(),
+                'username' => $user->getUsername(),
+                'mail' => $user->getMail(),
+                'hasAceptedTerms' => $user->hasAcceptedTerms(),
+                'token' => $user->getExchangeToken(),
+                'ws_perso' => $user->getPersonalWorkspace()->getGuid(),
+                'ws_resnode' => $wsResnode->getNodeHashName(),
+                'admin' => $user->isAdmin()
+        );
     }
 }

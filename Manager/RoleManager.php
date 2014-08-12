@@ -21,6 +21,7 @@ use Claroline\CoreBundle\Entity\Resource\ResourceNode;
 use Claroline\CoreBundle\Entity\Facet\FieldFacet;
 use Claroline\CoreBundle\Manager\Exception\LastManagerDeleteException;
 use Claroline\CoreBundle\Manager\Exception\RoleReadOnlyException;
+use Claroline\CoreBundle\Manager\RoleCreationManager;
 use Claroline\CoreBundle\Repository\RoleRepository;
 use Claroline\CoreBundle\Repository\UserRepository;
 use Claroline\CoreBundle\Repository\GroupRepository;
@@ -44,6 +45,7 @@ class RoleManager
     private $userRepo;
     /** @var GroupRepository */
     private $groupRepo;
+    private $userRoleCreationManager;
     private $dispatcher;
     private $om;
     private $messageManager;
@@ -185,9 +187,9 @@ class RoleManager
      *
      * @throws Exception\AddRoleException
      */
-    public function associateRole(AbstractRoleSubject $ars, Role $role, $sendMail = false)
+    public function associateRole(AbstractRoleSubject $ars, Role $role, $sendMail = false, $force = false)
     {
-        if (!$this->validateRoleInsert($ars, $role)) {
+        if (!$this->validateRoleInsert($ars, $role) && !$force) {
             throw new Exception\AddRoleException('Role cannot be added');
         }
 
@@ -198,8 +200,8 @@ class RoleManager
         if (!$ars->hasRole($role->getName())) {
 
             $ars->addRole($role);
+            //Creer le user role creation
             $this->om->startFlushSuite();
-
             $this->dispatcher->dispatch(
                 'log',
                 'Log\LogRoleSubscribe',
@@ -211,6 +213,18 @@ class RoleManager
             if ($sendMail) {
                 $this->sendInscriptionMessage($ars, $role);
             }
+        }
+    }
+
+    /**
+     * @param \Claroline\CoreBundle\Entity\User $user
+     * @param \Claroline\CoreBundle\Entity\Role $role
+     */
+    public function associateUserRole(User $user, Role $role, $sendMail = false,  $force = false)
+    {
+        if (!$user->hasRole($role->getName())) {
+            $user->addRole($role);
+            $this->associateRole($user, $role, $sendMail, $force);
         }
     }
 
@@ -232,6 +246,18 @@ class RoleManager
 
             $this->om->persist($ars);
             $this->om->endFlushSuite();
+        }
+    }
+    
+    /**
+     * @param \Claroline\CoreBundle\Entity\User $user
+     * @param \Claroline\CoreBundle\Entity\Role                $role
+     */
+    public function dissociateUserRole(User $user, Role $role)
+    {
+        if ($user->hasRole($role->getName())) {
+            $this->userRoleCreationManager->removeUserRoleCreation($user, $role);
+            $this->dissociateRole($user, $role);
         }
     }
 

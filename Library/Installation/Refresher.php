@@ -64,7 +64,7 @@ class Refresher
         if (function_exists('symlink') && strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
             $args['--symlink'] = true;
         }
-
+        
         $assetInstallCmd = new AssetsInstallCommand();
         $assetInstallCmd->setContainer($this->container);
         $assetInstallCmd->run(new ArrayInput($args), $this->output ?: new NullOutput());

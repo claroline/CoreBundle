@@ -843,7 +843,8 @@ class WorkspaceController extends Controller
 
             foreach ($roles as $role) {
                 if ($user->hasRole($role->getName())) {
-                    $this->roleManager->dissociateRole($user, $role);
+                    //$this->roleManager->dissociateRole($user, $role);
+                    $this->roleManager->dissociateUserRole($user, $role);
                     $this->eventDispatcher->dispatch(
                         'log',
                         'Log\LogRoleUnsubscribe',

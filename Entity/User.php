@@ -17,6 +17,7 @@ use \Serializable;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\EquatableInterface;
+use Claroline\CoreBundle\Library\Security\PlatformRoles;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use Doctrine\ORM\Mapping as ORM;
@@ -271,6 +272,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * @ORM\Column(name="last_uri", length=255, nullable=true)
      */
     protected $lastUri;
+    
 
     /**
      * @var string
@@ -299,6 +301,12 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * )
      */
     protected $fieldsFacetValue;
+    
+    /**
+     * @ORM\Column(name="exchange_token", type="string", unique=true)
+     */
+    protected $exchangeToken;
+
 
     public function __construct()
     {
@@ -313,6 +321,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
         $this->issuedBadges      = new ArrayCollection();
         $this->badgeClaims       = new ArrayCollection();
         $this->fieldsFacetValue  = new ArrayCollection();
+        $this->generateNewToken();
     }
 
     /**
@@ -679,6 +688,12 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
             }
         }
     }
+    
+    public function generateNewToken()
+    {
+        //TODO ne devrait pouvoir être effectué qu'une seule fois !
+        $this->exchangeToken = hash("sha256", $this->username.time().rand());
+    }
 
     /**
      * Replace the old platform role of a user by a new one.
@@ -1013,5 +1028,26 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
     public function getInitDate()
     {
         return $this->initDate;
+    }
+    
+    public function getExchangeToken()
+    {
+        return $this->exchangeToken;
+    }
+    
+    public function setExchangeToken($token)
+    {
+        $this->exchangeToken = $token;
+    }
+    
+    public function isAdmin()
+    {
+        $roles = $this->getEntityRoles();
+        foreach ($roles as $role) {
+            if ($role->getName() == PlatformRoles::ADMIN) {
+                return true;
+            }
+        }
+        return false;
     }
 }
