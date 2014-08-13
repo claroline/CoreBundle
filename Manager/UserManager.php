@@ -112,10 +112,10 @@ class UserManager
      *
      * @return \Claroline\CoreBundle\Entity\User
      */
-    public function createUser(User $user)
+    public function createUser(User $user, $wsGuid = null)
     {
         $this->objectManager->startFlushSuite();
-        $this->setPersonalWorkspace($user);
+        $this->setPersonalWorkspace($user, $wsGuid);
         $user->setPublicUrl($this->generatePublicUrl($user));
         $this->toolManager->addRequiredToolsToUser($user);
         $this->roleManager->setRoleToRoleSubject($user, PlatformRoles::USER);
@@ -293,7 +293,7 @@ class UserManager
      *
      * @param \Claroline\CoreBundle\Entity\User $user
      */
-    public function setPersonalWorkspace(User $user)
+    public function setPersonalWorkspace(User $user, $wsGuid = null)
     {
         $config = Configuration::fromTemplate($this->personalWsTemplateFile);
         $locale = $this->platformConfigHandler->getParameter('locale_language');
@@ -301,6 +301,8 @@ class UserManager
         $personalWorkspaceName = $this->translator->trans('personal_workspace', array(), 'platform') . $user->getUsername();
         $config->setWorkspaceName($personalWorkspaceName);
         $config->setWorkspaceCode($user->getUsername());
+        var_dump($wsGuid);
+        if ($wsGuid) $config->setGuid($wsGuid);
         $workspace = $this->workspaceManager->create($config, $user);
         $user->setPersonalWorkspace($workspace);
         $this->objectManager->persist($user);
@@ -823,6 +825,7 @@ class UserManager
     public function getUserAsTab($user)
     {        
         $wsResnode = $this->resourceNodeRepo->findWorkspaceRoot($user->getPersonalWorkspace());
+        
         return array(
                 "first_name" => $user->getFirstName(),
                 "last_name" => $user->getLastName(),
