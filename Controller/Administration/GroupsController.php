@@ -471,6 +471,7 @@ class GroupsController extends Controller
 
     /**
      * @EXT\Route("/{groupId}/import", name="claro_admin_import_users_into_group_form")
+     * @EXT\Method("GET")
      * @EXT\ParamConverter(
      *      "group",
      *      class="ClarolineCoreBundle:Group",
