@@ -112,6 +112,7 @@ class UsersController extends Controller
     /**
      * @EXT\Route("/new", name="claro_admin_user_creation_form")
      * @EXT\Template
+     * @EXT\Method("GET")
      *
      * Displays the user creation form.
      *
