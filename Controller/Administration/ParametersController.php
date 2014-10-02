@@ -272,7 +272,7 @@ class ParametersController extends Controller
     }
 
     /**
-     * @EXT\Route("/appearance", name="claro_admin_edit_parameters_appearance")
+     * @EXT\Route("/appearance/submit", name="claro_admin_edit_parameters_appearance")
      * @EXT\Method("POST")
      * @EXT\Template("ClarolineCoreBundle:Administration\Parameters:appearanceForm.html.twig")
      *
@@ -473,7 +473,7 @@ class ParametersController extends Controller
     }
 
     /**
-     * @EXT\Route("/mail/registration", name="claro_admin_edit_mail_registration")
+     * @EXT\Route("/mail/registration/submit", name="claro_admin_edit_mail_registration")
      * @EXT\Method("POST")
      * @EXT\Template("ClarolineCoreBundle:Administration\Parameters:registrationMailForm.html.twig")
      *
@@ -513,7 +513,7 @@ class ParametersController extends Controller
     }
 
     /**
-     * @EXT\Route("/mail/layout", name="claro_admin_edit_mail_layout")
+     * @EXT\Route("/mail/layout/submit", name="claro_admin_edit_mail_layout")
      * @EXT\Method("POST")
      * @EXT\Template("ClarolineCoreBundle:Administration\Parameters:mailLayoutForm.html.twig")
      *
@@ -553,7 +553,7 @@ class ParametersController extends Controller
     }
 
     /**
-     * @EXT\Route("/terms", name="claro_admin_edit_terms_of_service_submit")
+     * @EXT\Route("/terms/submit", name="claro_admin_edit_terms_of_service_submit")
      * @EXT\Method("POST")
      * @EXT\Template("ClarolineCoreBundle:Administration\Parameters:termsOfServiceForm.html.twig")
      *
