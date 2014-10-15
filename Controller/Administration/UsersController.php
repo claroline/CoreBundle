@@ -420,9 +420,13 @@ class UsersController extends Controller
                 if ($total + count($users) > $max) {
                     return array('form' => $form->createView(), 'error' => $additionalRole->getName() . ' unavailable');
                 }
+
+                $additionalRoles = array($additionalRole);
+            } else {
+                $additionalRoles = array ();
             }
 
-            $this->userManager->importUsers($users, $sendMail, null, array($additionalRole));
+            $this->userManager->importUsers($users, $sendMail, null, $additionalRoles);
 
             return new RedirectResponse($this->router->generate('claro_admin_user_list'));
         }
