@@ -320,3 +320,8 @@ claro_badge:
 claro_api:
     resource: "@ClarolineCoreBundle/Controller/API"
     type: annotation
+
+claro_o365:
+    resource: "@ClarolineCoreBundle/Controller/O365Controller.php"
+    prefix: o365
+    type: annotation

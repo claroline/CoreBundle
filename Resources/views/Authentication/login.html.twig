@@ -46,14 +46,16 @@ same message when authentication has failed (no precise validation errors).
                 </div>
                 <div class="panel-footer">
                     <button type="submit" class="btn btn-primary" tabindex="3">{{ 'login'|trans({}, 'platform') }}</button>
-                    {% if is_facebook_available() %}
+                    <a class="btn btn-primary o365" href="{{ path('claro_o365_get_token') }}">O365 Login</a>
+                                        
+                    {#{% if is_facebook_available() %}#}
                         <button class='btn btn-primary facebook-connect hide'>
                         <i class="fa fa-facebook-square"></i> {{ 'login'|trans({}, 'platform') }}
                         <div onlogin="fb_login();" class="fb-login-button" data-max-rows="1" data-size="xlarge"
                             data-show-faces="false" data-auto-logout-link="false">
                         </div>
                         </button>
-                    {% endif %}
+                    {#{% endif %}#}
                 </div>
             </form>
         </div>
