@@ -765,7 +765,6 @@ class WorkspaceController extends Controller
      *      class="ClarolineCoreBundle:Workspace\Workspace",
      *      options={"id" = "workspaceId", "strictId" = true}
      * )
-     * @SEC\PreAuthorize("canAccessWorkspace('OPEN')")
      *
      * Open the first tool of a workspace.
      *
@@ -788,7 +787,9 @@ class WorkspaceController extends Controller
             );
 
             return new RedirectResponse($route);
-            }
+        }
+
+        throw new AccessDeniedException();
     }
 
     /**
