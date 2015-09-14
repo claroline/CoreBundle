@@ -142,6 +142,7 @@ class ResourceManagerImporter extends Importer implements ConfigurationInterface
             $this->log('Importing directories...');
             //build the nodes
             foreach ($data['data']['directories'] as $directory) {
+                $this->log('Importing directory ' . $directory['directory']['name'] . '...');
                 $directoryEntity = new Directory();
                 $directoryEntity->setName($directory['directory']['name']);
 
@@ -188,6 +189,8 @@ class ResourceManagerImporter extends Importer implements ConfigurationInterface
                         $this->setPermissions($role, $entityRoles[$role['role']['name']], $directoryEntity);
                     }
                 }
+
+                $this->om->forceFlush();
             }
 
             //set the correct parent
@@ -717,35 +720,23 @@ class ResourceManagerImporter extends Importer implements ConfigurationInterface
         $uow = $this->om->getUnitOfWork();
         $map = $uow->getIdentityMap();
 
-        //is it in the identity map ?
-        $createdRights = $this->rightManager->getRightsFromIdentityMap(
+        $createdRights = $this->rightManager->getRightsFromIdentityMapOrScheduledForInsert(
             $role['role']['name'],
             $resourceEntity->getResourceNode()
         );
 
-        //is it already on the database ?
         if ($createdRights === null) {
+            //is it already on the database ?
             $createdRights = $this->rightManager
                 ->getOneByRoleAndResource($entityRole, $resourceEntity->getResourceNode());
         }
 
-        //There is no ResourceRight in the IdentityMap so we must create it
-        if ($createdRights === null) {
-            $this->rightManager->create(
+        $mask = $this->maskManager->encodeMask(
                 $role['role']['rights'],
-                $entityRole,
-                $resourceEntity->getResourceNode(),
-                false,
-                $creations
-            );
-            //We use the ResourceRight from the IdentityMap
-        } else {
-            $createdRights->setMask($this->maskManager->encodeMask(
-                    $role['role']['rights'],
-                    $createdRights->getResourceNode()->getResourceType())
-            );
-            $this->om->persist($createdRights);
-        }
+                $createdRights->getResourceNode()->getResourceType()
+        );
+        $createdRights->setMask($mask);
+        $this->om->persist($createdRights);
     }
 
     public function format($data)
@@ -814,7 +805,7 @@ class ResourceManagerImporter extends Importer implements ConfigurationInterface
                 $_data
             );
         }
-        
+
         if ($setParentNull) $parentId = null;
 
         $resElement = array('item' => array(
