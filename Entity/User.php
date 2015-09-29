@@ -1030,7 +1030,8 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
             'email' => false,
             'phone' => true,
             'picture' => true,
-            'description' => true
+            'description' => true,
+            'password' = true
         );
     }
 
