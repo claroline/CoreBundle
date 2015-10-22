@@ -35,8 +35,15 @@ class AuthenticationManager
     {
         $this->container = $container;
         $this->fileTypes = '/\.yml$/';
-        $this->driverPath = __DIR__ . "/../../../../../../app/config/Authentication/";
+        $this->driverPath = $container->getParameter('claroline.param.authentication_directory');
         $this->finder = new Finder();
+    }
+
+    public function getSourcesTypes()
+    {
+        $types = $this->finder->directories()->in($this->driverPath);
+
+        return $types;
     }
 
     /**

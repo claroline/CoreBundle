@@ -267,13 +267,18 @@ claro_admin_facet:
     type: annotation
 
 claro_admin_oauth:
-    resource: "@ClarolineCoreBundle/Controller/Administration/OauthController.php"
+    resource: "@ClarolineCoreBundle/Controller/Administration/Authentication/OauthController.php"
     prefix: admin/oauth
     type: annotation
 
 claro_admin_i18n:
     resource: "@ClarolineCoreBundle/Controller/Administration/InternationalizationController.php"
     prefix: admin/i18n
+    type: annotation
+
+claro_admin_authentication_sources:
+    resource: "@ClarolineCoreBundle/Controller/Administration/Authentication/AuthenticationController.php"
+    prefix: admin/authentication
     type: annotation
 
 claro_api:

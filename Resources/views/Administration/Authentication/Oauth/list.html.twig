@@ -15,11 +15,15 @@
                 'href': path('claro_admin_index')
             },
             {
-                'name': 'oauth'|trans({}, 'platform'),
-                'href': path('claro_admin_parameters_oauth_index')
+                'name': 'authentication'|trans({}, 'platform'),
+                'href': path('claro_admin_authentication_index')
             },
             {
                 'name': 'Claroline'|trans({}, 'platform'),
+                'href': path('claro_admin_oauth_index')
+            },
+            {
+                'name': 'friend_platform'|trans({}, 'platform'),
                 'href': ''
             }
         ])

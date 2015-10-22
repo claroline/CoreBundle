@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Claroline\CoreBundle\Controller\Administration;
+namespace Claroline\CoreBundle\Controller\Administration\Authentication;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
@@ -55,7 +55,23 @@ class OauthController extends Controller
 
     /**
      * @EXT\Route(
-     *     "/",
+     *     "/index",
+     *     name="claro_admin_oauth_index",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Template()
+     * @SEC\PreAuthorize("canOpenAdminTool('platform_parameters')")
+     *
+     * @return Response
+     */
+    public function indexAction()
+    {
+        return array();
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/list",
      *     name="claro_admin_oauth_claroline",
      *     options = {"expose"=true}
      * )
