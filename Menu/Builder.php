@@ -251,6 +251,20 @@ class Builder extends ContainerAware
         return $menu;
     }
 
+    public function authenticationSourceConfigurationMenu(FactoryInterface $factory, array $options)
+    {
+        $menu = $factory->createItem('root')
+            ->setChildrenAttribute('class', 'nav nav-pills');
+
+        //allowing the menu to be extended
+        $this->container->get('event_dispatcher')->dispatch(
+            'claroline_external_authentication_source_configure',
+            new ConfigureMenuEvent($factory, $menu)
+        );
+
+        return $menu;
+    }
+
     public function contactActionsMenu(FactoryInterface $factory, array $options)
     {
         $user = $options['user'];

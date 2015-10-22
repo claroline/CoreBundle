@@ -11,6 +11,7 @@
 
 namespace Claroline\CoreBundle\Controller\Administration\Authentication;
 
+use Claroline\CoreBundle\Manager\AuthenticationManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use JMS\DiExtraBundle\Annotation as DI;
@@ -22,13 +23,18 @@ use Symfony\Component\Translation\TranslatorInterface;
  */
 class AuthenticationController extends Controller
 {
+    private $am;
+
     /**
      * @DI\InjectParams({
+     *     "am" = @DI\Inject("claroline.common.authentication_manager")
      * })
      */
     public function __construct(
+        AuthenticationManager $am
     )
     {
+        $this->am = $am;
     }
 
     /**

@@ -155,7 +155,7 @@ class OauthController extends Controller
      *     name="claro_admin_oauth_client_create",
      *     options = {"expose"=true}
      * )
-     * @EXT\Template("ClarolineCoreBundle:Administration:oauth\modalCreateForm.html.twig")
+     * @EXT\Template("ClarolineCoreBundle:Administration:Authentication:Oauth\modalCreateForm.html.twig")
      * @SEC\PreAuthorize("canOpenAdminTool('platform_parameters')")
      *
      * @return Response
@@ -190,7 +190,7 @@ class OauthController extends Controller
      *     name="claro_admin_oauth_client_edit",
      *     options = {"expose"=true}
      * )
-     * @EXT\Template("ClarolineCoreBundle:Administration:oauth\modalEditForm.html.twig")
+     * @EXT\Template("ClarolineCoreBundle:Administration:Authentication:Oauth\modalEditForm.html.twig")
      * @SEC\PreAuthorize("canOpenAdminTool('platform_parameters')")
      *
      * @return Response
@@ -261,7 +261,7 @@ class OauthController extends Controller
      *     name="oauth_request_friend_submit",
      *     options = {"expose"=true}
      * )
-     * @EXT\Template("ClarolineCoreBundle:Administration:Oauth\requestFriendForm.html.twig")
+     * @EXT\Template("ClarolineCoreBundle:Administration:Authentication:Oauth\requestFriendForm.html.twig")
      * @SEC\PreAuthorize("canOpenAdminTool('platform_parameters')")
      *
      * @return Response
@@ -442,7 +442,7 @@ class OauthController extends Controller
      *     options = {"expose"=true}
      * )
      *
-     * @EXT\Template("ClarolineCoreBundle:Administration:Oauth\friendAuthenticationForm.html.twig")
+     * @EXT\Template("ClarolineCoreBundle:Administration:Authentication:Oauth\friendAuthenticationForm.html.twig")
      * @SEC\PreAuthorize("canOpenAdminTool('platform_parameters')")
      *
      * @return Response
