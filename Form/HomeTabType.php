@@ -22,16 +22,28 @@ class HomeTabType extends AbstractType
 {
     private $isAdmin;
     private $workspace;
+    private $color;
 
-    public function __construct(Workspace $workspace = null, $isAdmin = false)
+    public function __construct(Workspace $workspace = null, $isAdmin = false, $color = null)
     {
         $this->isAdmin = $isAdmin;
         $this->workspace = $workspace;
+        $this->color = $color;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('name', 'text', array('constraints' => new NotBlank(), 'label' => 'name'));
+        $builder->add(
+            'color',
+            'text',
+            array(
+                'required' => false,
+                'mapped' => false,
+                'label' => 'color',
+                'data' => $this->color
+            )
+        );
         $workspace = $this->workspace;
 
         if (!is_null($workspace)) {

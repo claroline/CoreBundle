@@ -273,6 +273,10 @@
         $(this).colorpicker();
     });
     
+    $('body').on('focus', '#home_tab_form_color', function () {
+        $(this).colorpicker();
+    });
+    
     $('#widgets-list-panel').on('change', function (e, items) {
         var wdcIds = [];
         var datas = {};

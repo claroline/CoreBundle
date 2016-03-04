@@ -151,6 +151,10 @@
         $(this).colorpicker();
     });
     
+    $('body').on('focus', '#home_tab_form_color', function () {
+        $(this).colorpicker();
+    });
+    
     $('#widgets-section').on('click', '#create-widget-instance', function () {
         window.Claroline.Modal.displayForm(
             Routing.generate(

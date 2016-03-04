@@ -246,6 +246,8 @@ class HomeTabController extends Controller
             } else {
                 $homeTabConfig->setTabOrder($lastOrder['order_max'] + 1);
             }
+            $color = $homeTabForm->get('color')->getData();
+            $homeTabConfig->setDetails(array('color' => $color));
             $this->homeTabManager->persistHomeTabConfigs($homeTab, $homeTabConfig);
 
             return new JsonResponse($homeTab->getId(), 200);
@@ -285,9 +287,11 @@ class HomeTabController extends Controller
     {
         $this->checkAdminHomeTab($homeTab, $homeTabType);
         $this->checkAdminHomeTabConfig($homeTabConfig, $homeTabType);
+        $details = $homeTabConfig->getDetails();
+        $color = isset($details['color']) ? $details['color'] : null;
 
         $homeTabForm = $this->formFactory->create(
-            new HomeTabType(null, true),
+            new HomeTabType(null, true, $color),
             $homeTab
         );
         $homeTabConfigForm = $this->formFactory->create(
@@ -344,6 +348,14 @@ class HomeTabController extends Controller
         $homeTabConfigForm->handleRequest($this->request);
 
         if ($homeTabForm->isValid() && $homeTabConfigForm->isValid()) {
+            $color = $homeTabForm->get('color')->getData();
+            $details = $homeTabConfig->getDetails();
+
+            if (is_null($details)) {
+                $details = array();
+            }
+            $details['color'] = $color;
+            $homeTabConfig->setDetails($details);
             $this->homeTabManager->persistHomeTabConfigs($homeTab, $homeTabConfig);
             $visibility = $homeTabConfig->isVisible() ? 'visible' : 'hidden';
             $lock = $homeTabConfig->isLocked() ? 'locked' : 'unlocked';
