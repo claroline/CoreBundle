@@ -4,5 +4,14 @@
 </span>
 
 <claro-desktop-home-tabs></claro-desktop-home-tabs>
-
+<br>
 <claro-widgets></claro-widgets>
+
+<div ng-if="!dhmc.isHomeLocked && dhmc.editionMode && dhmc.selectedTabId && !dhmc.selectedTabIsLocked">
+    <hr>
+    <span class="btn btn-primary" ng-click="dhmc.createWidget(dhmc.selectedTabId)">
+        <i class="fa fa-plus-circle">
+        </i>
+        {{ 'add_widget_to_home_tab'|trans:{}:'platform' }}
+    </span>
+</div>

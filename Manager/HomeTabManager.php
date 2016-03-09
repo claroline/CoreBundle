@@ -403,11 +403,10 @@ class HomeTabManager
             false;
     }
 
-    public function checkHomeTabVisibilityForConfigByUser(
-        HomeTab $homeTab,
-        User $user
-    )
+    public function checkHomeTabVisibilityForConfigByUser(HomeTab $homeTab, User $user)
     {
+        $visible = false;
+
         $adminHomeTabConfig = $this->homeTabConfigRepo->findOneBy(
             array(
                 'homeTab' => $homeTab,
@@ -424,18 +423,18 @@ class HomeTabManager
         );
 
         if (is_null($adminHomeTabConfig) && is_null($userHomeTabConfig)) {
-            return false;
+            $visible = false;
         } elseif (is_null($userHomeTabConfig)) {
-            return $adminHomeTabConfig->isVisible();
+            $visible = $adminHomeTabConfig->isVisible();
         } elseif (is_null($adminHomeTabConfig)) {
-            return true;
+            $visible = true;
         } else {
             $visible = $adminHomeTabConfig->isLocked() ?
                 $adminHomeTabConfig->isVisible() :
                 true;
-
-            return $visible;
         }
+
+        return $visible;
     }
 
     public function checkHomeTabVisibilityByUser(
@@ -672,6 +671,16 @@ class HomeTabManager
     {
         return $this->homeTabConfigRepo
             ->findAdminDesktopHomeTabConfigs();
+    }
+
+    public function getAdminDesktopHomeTabConfigsByRoles(array $roleNames)
+    {
+        return $this->homeTabConfigRepo->findAdminDesktopHomeTabConfigsByRoles($roleNames);
+    }
+
+    public function getVisibleAdminDesktopHomeTabConfigsByRoles(array $roleNames)
+    {
+        return $this->homeTabConfigRepo->findVisibleAdminDesktopHomeTabConfigsByRoles($roleNames);
     }
 
     public function getAdminWorkspaceHomeTabConfigs()

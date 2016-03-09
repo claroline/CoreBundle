@@ -4,7 +4,7 @@
 
 .home-tabs-panel {
     ul.nav.nav-tabs {
-        & > li {
+        & > li.home-tab {
             -webkit-transition: all 0.2s ease-in-out;
             -moz-transition: all 0.2s ease-in-out;
             -o-transition: all 0.2s ease-in-out;
@@ -65,13 +65,9 @@
                 background-color: @tab-background-active-color;
             }
         }
+        
+        & > li.new-home-tab {
+            margin-left: 6px;
+        }
     }
-
-/*    .tab-pane {
-        background-color: @tab-background-color;
-        border: 1px solid #ddd;
-        border-top: 0;
-        padding: 10px;
-        min-height: 150px;
-    }*/
 }

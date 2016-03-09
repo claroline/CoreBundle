@@ -9,8 +9,9 @@
     
 export default class DesktopHomeMainCtrl {
         
-    constructor($http, $sce, ClarolineAPIService) {
+    constructor($http, $uibModal, $sce, ClarolineAPIService) {
         this.$http = $http
+        this.$uibModal = $uibModal
         this.$sce = $sce
         this.ClarolineAPIService = ClarolineAPIService
         this.adminHomeTabs = []
@@ -20,9 +21,86 @@ export default class DesktopHomeMainCtrl {
         this.editionMode = false
         this.isHomeLocked = true
         this.selectedTabId = 0
+        this.selectedTabIsLocked = true
         
+        this._addUserHomeTabCallback = this._addUserHomeTabCallback.bind(this)
+        this._updateUserHomeTabCallback = this._updateUserHomeTabCallback.bind(this)
+        this._removeAdminHomeTabCallback = this._removeAdminHomeTabCallback.bind(this)
+        this._removeUserHomeTabCallback = this._removeUserHomeTabCallback.bind(this)
         this._removeWorkspaceHomeTabCallback = this._removeWorkspaceHomeTabCallback.bind(this)
         this.initialize()
+    }
+    
+    _addUserHomeTabCallback(data) {
+        this.userHomeTabs.push(data)
+    }
+    
+    _updateUserHomeTabCallback(data) {
+        if (data['tabId']) {
+        
+            for (let i = 0; i < this.userHomeTabs.length; i++) {
+                
+                if (data['tabId'] === this.userHomeTabs[i]['tabId']) {
+                    this.userHomeTabs[i]['tabName'] = data['tabName']
+                    this.userHomeTabs[i]['color'] = data['color']
+                    break;
+                }
+            }
+        }
+    }
+    
+    _removeAdminHomeTabCallback(data) {
+        
+        if (data['tabId']) {
+        
+            for (let i = 0; i < this.adminHomeTabs.length; i++) {
+
+                if (data['tabId'] === this.adminHomeTabs[i]['tabId']) {
+                    this.adminHomeTabs.splice(i, 1)
+                    break
+                }
+            }
+
+            if (data['tabId'] === this.selectedTabId) {
+                this.selectDefaultHomeTab()
+            }
+        }
+    }
+    
+    _removeUserHomeTabCallback(data) {
+        
+        if (data['tabId']) {
+        
+            for (let i = 0; i < this.userHomeTabs.length; i++) {
+
+                if (data['tabId'] === this.userHomeTabs[i]['tabId']) {
+                    this.userHomeTabs.splice(i, 1)
+                    break
+                }
+            }
+
+            if (data['tabId'] === this.selectedTabId) {
+                this.selectDefaultHomeTab()
+            }
+        }
+    }
+    
+    _removeWorkspaceHomeTabCallback(data) {
+        
+        if (data['tabId']) {
+        
+            for (let i = 0; i < this.workspaceHomeTabs.length; i++) {
+
+                if (data['tabId'] === this.workspaceHomeTabs[i]['tabId']) {
+                    this.workspaceHomeTabs.splice(i, 1)
+                    break
+                }
+            }
+
+            if (data['tabId'] === this.selectedTabId) {
+                this.selectDefaultHomeTab()
+            }
+        }
     }
     
     toggleEditionMode() {
@@ -37,77 +115,112 @@ export default class DesktopHomeMainCtrl {
     
     showTab(tabId) {
         this.selectedTabId = tabId
+        this.loadWidgets(tabId)
     }
     
-    deletePinnedWorkspaceHomeTab(tabId, tabConfigId) {
+    hideAmdinHomeTab($event, tabConfigId) {
+        $event.stopPropagation()
         
-        if (this.editionMode) {
-            const route = Routing.generate('api_delete_pinned_workspace_home_tab', {htc: tabConfigId})
+        if (!this.isHomeLocked && this.editionMode) {
+            const url = Routing.generate('api_put_admin_home_tab_visibility_toggle', {htc: tabConfigId})
 
             this.ClarolineAPIService.confirm(
-                {route, method: 'DELETE'},
+                {url, method: 'PUT'},
+                this._removeAdminHomeTabCallback,
+                Translator.trans('home_tab_delete_confirm_title', {}, 'platform'),
+                Translator.trans('home_tab_delete_confirm_message', {}, 'platform')
+            )
+        }
+    }
+    
+    createUserHomeTab() {
+        
+        if (!this.isHomeLocked && this.editionMode) {
+            const modal = this.$uibModal.open({
+                templateUrl: Routing.generate(
+                    'api_get_home_tab_creation_form',
+                    {'_format': 'html'}
+                ),
+                controller: 'HomeTabCreationModalCtrl',
+                controllerAs: 'htfmc',
+                resolve: {
+                    callback: () => { return this._addUserHomeTabCallback }
+                }
+            })
+
+            modal.result.then(result => {
+
+                if (!result) {
+                    return
+                } else {
+                    this._addUserHomeTabCallback(result)
+                }
+            })
+        }
+    }
+    
+    editUserHomeTab($event, tabId) {
+        $event.stopPropagation()
+        
+        if (!this.isHomeLocked && this.editionMode) {
+            
+            const modal = this.$uibModal.open({
+                templateUrl: Routing.generate(
+                    'api_get_home_tab_edition_form',
+                    {'_format': 'html', homeTab: tabId}
+                ) + '?bust=' + Math.random().toString(36).slice(2),
+                controller: 'HomeTabEditionModalCtrl',
+                controllerAs: 'htfmc',
+                resolve: {
+                    homeTabId: () => { return tabId },
+                    callback: () => { return this._updateUserHomeTabCallback }
+                }
+            })
+
+            modal.result.then(result => {
+                
+                if (!result) {
+                    return
+                } else {
+                    this._updateUserHomeTabCallback(result)
+                }
+            })
+        }
+    }
+    
+    deleteUserHomeTab($event, tabConfigId) {
+        $event.stopPropagation()
+        
+        if (!this.isHomeLocked && this.editionMode) {
+            const url = Routing.generate('api_delete_user_home_tab', {htc: tabConfigId})
+
+            this.ClarolineAPIService.confirm(
+                {url, method: 'DELETE'},
+                this._removeUserHomeTabCallback,
+                Translator.trans('home_tab_delete_confirm_title', {}, 'platform'),
+                Translator.trans('home_tab_delete_confirm_message', {}, 'platform')
+            )
+        }
+    }
+    
+    deletePinnedWorkspaceHomeTab($event, tabConfigId) {
+        $event.stopPropagation()
+        
+        if (this.isHomeLocked || this.editionMode) {
+            const url = Routing.generate('api_delete_pinned_workspace_home_tab', {htc: tabConfigId})
+
+            this.ClarolineAPIService.confirm(
+                {url, method: 'DELETE'},
                 this._removeWorkspaceHomeTabCallback,
                 Translator.trans('home_tab_bookmark_delete_confirm_title', {}, 'platform'),
-                Translator.trans('home_tab_bookmark_delete_confirm_title', {}, 'platform')
-            );
-    
-//            this.$http.delete(route).then(datas => {
-//                
-//                if (datas['status'] === 200 && datas['data']['tabId'] === tabId) {
-//                    this.removeWorkspaceHomeTab(tabId)
-//                }
-//            })
+                Translator.trans('home_tab_bookmark_delete_confirm_message', {}, 'platform')
+            )
         }
-    }
-    
-    removeAdminHomeTab(tabId) {
-        
-        for (let i = 0; i < this.adminHomeTabs.length; i++) {
-            
-            if (tabId === this.adminHomeTabs[i]['tabId']) {
-                this.adminHomeTabs.splice(i, 1)
-                break
-            }
-        }
-        
-        if (tabId === this.selectedTabId) {
-            this.selectDefaultHomeTab()
-        }
-    }
-    
-    removeUserHomeTab(tabId) {
-        
-        for (let i = 0; i < this.userHomeTabs.length; i++) {
-            
-            if (tabId === this.userHomeTabs[i]['tabId']) {
-                this.userHomeTabs.splice(i, 1)
-                break
-            }
-        }
-        
-        if (tabId === this.selectedTabId) {
-            this.selectDefaultHomeTab()
-        }
-    }
-    
-    _removeWorkspaceHomeTabCallback(data) {
-        console.log(data)
-        
-//        for (let i = 0; i < this.workspaceHomeTabs.length; i++) {
-//            
-//            if (tabId === this.workspaceHomeTabs[i]['tabId']) {
-//                this.workspaceHomeTabs.splice(i, 1)
-//                break
-//            }
-//        }
-//        
-//        if (tabId === this.selectedTabId) {
-//            this.selectDefaultHomeTab()
-//        }
     }
     
     selectDefaultHomeTab() {
         this.selectedTabId = 0
+        this.selectedTabIsLocked = true
         
         if (this.adminHomeTabs.length > 0) {
             this.selectedTabId = this.adminHomeTabs[0]['tabId']
@@ -124,7 +237,21 @@ export default class DesktopHomeMainCtrl {
         if (tabId === 0) {
             this.widgets = []
         } else {
-            // Load widgets datas
+            const route = Routing.generate('api_get_desktop_home_tab_widgets', {homeTab: tabId})
+            this.$http.get(route).then(datas => {
+
+                if (datas['status'] === 200) {
+                    this.selectedTabIsLocked = datas['data']['isLockedHomeTab']
+                    this.widgets = datas['data']['widgets']
+                }
+            })  
+        }
+    }
+    
+    createWidget(tabId) {
+        
+        if (!this.isHomeLocked && this.editionMode) {
+            console.log('Creating Widget... ' + tabId)
         }
     }
     
