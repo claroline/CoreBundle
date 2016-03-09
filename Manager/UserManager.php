@@ -1485,8 +1485,8 @@ class UserManager
         );
 
         $query = $qb->getQuery();
-        
-        if ($page && $limit && !$count) {
+
+        if ($page !== null && $limit !== null && !$count) {
             $query->setMaxResults($limit);
             $query->setFirstResult($page * $limit);
         }
@@ -1533,7 +1533,7 @@ class UserManager
                 $user->addOrganization($default);
                 $this->objectManager->persist($user);
 
-                if ($i % self::MAX_EDIT_BATCH_SIZE) {
+                if ($i % self::MAX_EDIT_BATCH_SIZE == 0) {
                     $this->objectManager->forceFlush();
                 }
             }
