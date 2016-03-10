@@ -28,7 +28,8 @@ angular.module('DesktopHomeModule', [
     'colorpicker.module',
     'ui.translation',
     'ui.router',
-    'ClarolineAPI'
+    'ClarolineAPI',
+    'gridster'
 ])
 .controller('DesktopHomeMainCtrl', ['$http', '$uibModal', '$sce', 'ClarolineAPIService', DesktopHomeMainCtrl])
 .controller('HomeTabCreationModalCtrl', HomeTabCreationModalCtrl)

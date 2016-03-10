@@ -335,7 +335,7 @@ class WidgetHomeTabConfigRepository extends EntityRepository
         $query->setParameter('widgetInstance', $widgetInstance);
         $query->setParameter('user', $user);
 
-        return $query->getResult();
+        return $query->getOneOrNullResult();
     }
 
     public function findWidgetHomeTabConfigsByHomeTabAndType(HomeTab $homeTab, $type)

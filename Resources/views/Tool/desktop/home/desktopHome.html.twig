@@ -24,9 +24,14 @@
           type='text/css'
           href='{{ asset('packages/angular-bootstrap-colorpicker/css/colorpicker.min.css')}}'
     >
+    <link rel='stylesheet'
+          type='text/css'
+          href='{{ asset('packages/angular-gridster/dist/angular-gridster.min.css')}}'
+    >
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script src="{{ hotAsset('dist/claroline-core-desktop-home.js') }}"></script>
+    <script src="{{ asset('packages/angular-gridster/dist/angular-gridster.min.js') }}"></script>
 {% endblock %}

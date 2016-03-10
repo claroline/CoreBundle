@@ -11,9 +11,9 @@
 
 namespace Claroline\CoreBundle\Event\Log;
 
-class LogHomeTabUserDeleteEvent extends LogGenericEvent
+class LogWidgetUserDeleteEvent extends LogGenericEvent
 {
-    const ACTION = 'user-home-tab-delete';
+    const ACTION = 'user-widget-delete';
 
     /**
      * Constructor.

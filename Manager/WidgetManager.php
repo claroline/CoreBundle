@@ -271,6 +271,26 @@ class WidgetManager
             ->findWorkspaceWidgetInstance($workspace, $excludedWidgetInstances);
     }
 
+    public function getAdminWidgetDisplayConfigsByWHTCs(array $widgetHTCs)
+    {
+        $results = array();
+        $widgetInstances = array();
+
+        foreach ($widgetHTCs as $whtc) {
+            $widgetInstance = $whtc->getWidgetInstance();
+            $widgetInstances[] = $widgetInstance;
+        }
+        $adminWDCs = $this->getAdminWidgetDisplayConfigsByWidgets($widgetInstances);
+
+        foreach ($adminWDCs as $wdc) {
+            $widgetInstance = $wdc->getWidgetInstance();
+            $id = $widgetInstance->getId();
+            $results[$id] = $wdc;
+        }
+
+        return $results;
+    }
+
     public function generateWidgetDisplayConfigsForUser(User $user, array $widgetHTCs)
     {
         $results = array();

@@ -14,11 +14,17 @@ namespace Claroline\CoreBundle\Controller\API\Desktop;
 use Claroline\CoreBundle\Entity\Home\HomeTab;
 use Claroline\CoreBundle\Entity\Home\HomeTabConfig;
 use Claroline\CoreBundle\Entity\User;
+use Claroline\CoreBundle\Entity\Widget\WidgetHomeTabConfig;
+use Claroline\CoreBundle\Entity\Widget\WidgetInstance;
 use Claroline\CoreBundle\Event\Log\LogHomeTabAdminUserEditEvent;
 use Claroline\CoreBundle\Event\Log\LogHomeTabUserCreateEvent;
 use Claroline\CoreBundle\Event\Log\LogHomeTabUserDeleteEvent;
 use Claroline\CoreBundle\Event\Log\LogHomeTabUserEditEvent;
 use Claroline\CoreBundle\Event\Log\LogHomeTabWorkspaceUnpinEvent;
+use Claroline\CoreBundle\Event\Log\LogWidgetAdminHideEvent;
+use Claroline\CoreBundle\Event\Log\LogWidgetUserCreateEvent;
+use Claroline\CoreBundle\Event\Log\LogWidgetUserDeleteEvent;
+use Claroline\CoreBundle\Event\Log\LogWidgetUserEditEvent;
 use Claroline\CoreBundle\Event\StrictDispatcher;
 use Claroline\CoreBundle\Form\HomeTabType;
 use Claroline\CoreBundle\Library\Security\Utilities;
@@ -214,6 +220,7 @@ class DesktopHomeController extends FOSRestController
         $isVisibleHomeTab = $this->homeTabManager
             ->checkHomeTabVisibilityForConfigByUser($homeTab, $user);
         $isLockedHomeTab = $this->homeTabManager->checkHomeTabLock($homeTab);
+        $isHomeLocked = $this->roleManager->isHomeLocked($user);
         $isWorkspace = false;
         $configs = array();
         $widgets = array();
@@ -228,45 +235,45 @@ class DesktopHomeController extends FOSRestController
             if ($homeTab->getType() === 'admin_desktop') {
                 $adminConfigs = $this->homeTabManager->getAdminWidgetConfigs($homeTab);
 
-                if (!$isLockedHomeTab) {
+                if ($isLockedHomeTab || $isHomeLocked) {
+                    $configs = $adminConfigs;
+                } else {
                     $userWidgetsConfigs = $this->homeTabManager
                         ->getWidgetConfigsByUser($homeTab, $user);
-                } else {
-                    $userWidgetsConfigs = array();
-                }
 
-                foreach ($adminConfigs as $adminConfig) {
+                    foreach ($adminConfigs as $adminConfig) {
 
-                    if ($adminConfig->isLocked()) {
-                        if ($adminConfig->isVisible()) {
-                            $configs[] = $adminConfig;
-                        }
-                    } else {
-                        $existingWidgetConfig = $this->homeTabManager
-                            ->getUserAdminWidgetHomeTabConfig(
-                                $homeTab,
-                                $adminConfig->getWidgetInstance(),
-                                $user
-                            );
-                        if (count($existingWidgetConfig) === 0) {
-                            $newWHTC = new WidgetHomeTabConfig();
-                            $newWHTC->setHomeTab($homeTab);
-                            $newWHTC->setWidgetInstance($adminConfig->getWidgetInstance());
-                            $newWHTC->setUser($user);
-                            $newWHTC->setWidgetOrder($adminConfig->getWidgetOrder());
-                            $newWHTC->setVisible($adminConfig->isVisible());
-                            $newWHTC->setLocked(false);
-                            $newWHTC->setType('admin_desktop');
-                            $this->homeTabManager->insertWidgetHomeTabConfig($newWHTC);
-                            $configs[] = $newWHTC;
+                        if ($adminConfig->isLocked()) {
+                            if ($adminConfig->isVisible()) {
+                                $configs[] = $adminConfig;
+                            }
                         } else {
-                            $configs[] = $existingWidgetConfig[0];
+                            $existingWidgetConfig = $this->homeTabManager
+                                ->getUserAdminWidgetHomeTabConfig(
+                                    $homeTab,
+                                    $adminConfig->getWidgetInstance(),
+                                    $user
+                                );
+                            if (is_null($existingWidgetConfig) && $adminConfig->isVisible()) {
+                                $newWHTC = new WidgetHomeTabConfig();
+                                $newWHTC->setHomeTab($homeTab);
+                                $newWHTC->setWidgetInstance($adminConfig->getWidgetInstance());
+                                $newWHTC->setUser($user);
+                                $newWHTC->setWidgetOrder($adminConfig->getWidgetOrder());
+                                $newWHTC->setVisible($adminConfig->isVisible());
+                                $newWHTC->setLocked(false);
+                                $newWHTC->setType('admin_desktop');
+                                $this->homeTabManager->insertWidgetHomeTabConfig($newWHTC);
+                                $configs[] = $newWHTC;
+                            } else if ($existingWidgetConfig->isVisible()){
+                                $configs[] = $existingWidgetConfig;
+                            }
                         }
                     }
-                }
 
-                foreach ($userWidgetsConfigs as $userWidgetsConfig) {
-                    $configs[] = $userWidgetsConfig;
+                    foreach ($userWidgetsConfigs as $userWidgetsConfig) {
+                        $configs[] = $userWidgetsConfig;
+                    }
                 }
             } elseif ($homeTab->getType() === 'desktop') {
                 $configs = $this->homeTabManager->getWidgetConfigsByUser($homeTab, $user);
@@ -280,15 +287,19 @@ class DesktopHomeController extends FOSRestController
                 );
             }
 
-            $wdcs = $isWorkspace ?
-                $this->widgetManager->generateWidgetDisplayConfigsForWorkspace(
+            if ($isWorkspace) {
+                $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForWorkspace(
                     $workspace,
                     $configs
-                ) :
-                $this->widgetManager->generateWidgetDisplayConfigsForUser(
+                );
+            } else if ($isLockedHomeTab) {
+                $wdcs = $this->widgetManager->getAdminWidgetDisplayConfigsByWHTCs($configs);
+            } else {
+                $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForUser(
                     $user,
                     $configs
                 );
+            }
 
             foreach ($wdcs as $wdc) {
 
@@ -322,14 +333,15 @@ class DesktopHomeController extends FOSRestController
 //                $widget['content'] = $event->getContent();
                 $widgetDatas['configurable'] = $config->isLocked() !== true
                     && $config->getWidgetInstance()->getWidget()->isConfigurable();
+                $widgetDatas['locked'] = $config->isLocked();
                 $widgetDatas['type'] = $config->getType();
                 $widgetDatas['instanceId'] = $widgetInstanceId;
                 $widgetDatas['instanceName'] = $widgetInstance->getName();
                 $widgetDatas['instanceIcon'] = $widgetInstance->getIcon();
                 $widgetDatas['row'] = $wdcs[$widgetInstanceId]->getRow();
-                $widgetDatas['column'] = $wdcs[$widgetInstanceId]->getColumn();
-                $widgetDatas['height'] = $wdcs[$widgetInstanceId]->getHeight();
-                $widgetDatas['width'] = $wdcs[$widgetInstanceId]->getWidth();
+                $widgetDatas['col'] = $wdcs[$widgetInstanceId]->getColumn();
+                $widgetDatas['sizeY'] = $wdcs[$widgetInstanceId]->getHeight();
+                $widgetDatas['sizeX'] = $wdcs[$widgetInstanceId]->getWidth();
                 $widgetDatas['color'] = $wdcs[$widgetInstanceId]->getColor();
                 $widgets[] = $widgetDatas;
             }
@@ -604,7 +616,6 @@ class DesktopHomeController extends FOSRestController
     public function deleteUserHomeTabAction(HomeTabConfig $htc)
     {
         $this->checkHomeTabConfig($htc, 'desktop');
-        $user = $htc->getUser();
         $tab = $htc->getHomeTab();
         $details = $htc->getDetails();
         $color = isset($details['color']) ? $details['color'] : null;
@@ -623,7 +634,7 @@ class DesktopHomeController extends FOSRestController
         );
         $this->homeTabManager->deleteHomeTabConfig($htc);
         $this->homeTabManager->deleteHomeTab($tab);
-        $event = new LogHomeTabUserDeleteEvent($user, $htcDatas);
+        $event = new LogHomeTabUserDeleteEvent($htcDatas);
         $this->eventDispatcher->dispatch('log', $event);
 
         return new JsonResponse($htcDatas, 200);
@@ -664,6 +675,93 @@ class DesktopHomeController extends FOSRestController
         return new JsonResponse($htcDatas, 200);
     }
 
+    /**
+     * @View(serializerGroups={"api_home_tab"})
+     * @ApiDoc(
+     *     description="Change visibility of a widget",
+     *     views = {"desktop_home"}
+     * )
+     */
+    public function putDesktopWidgetHomeTabConfigVisibilityChangeAction(
+        WidgetHomeTabConfig $widgetHomeTabConfig
+    )
+    {
+        $this->checkWidgetHomeTabConfigEdition($widgetHomeTabConfig);
+        $this->homeTabManager->changeVisibilityWidgetHomeTabConfig($widgetHomeTabConfig, false);
+        $homeTab = $widgetHomeTabConfig->getHomeTab();
+        $event = new LogWidgetAdminHideEvent($homeTab, $widgetHomeTabConfig);
+        $this->eventDispatcher->dispatch('log', $event);
+
+        $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
+        $widget = $widgetInstance->getWidget();
+        $datas = array(
+            'widgetId' => $widget->getId(),
+            'widgetName' => $widget->getName(),
+            'widgetIsConfigurable' => $widget->isConfigurable(),
+            'widgetIsExportable' => $widget->isExportable(),
+            'widgetIsDisplayableInWorkspace' => $widget->isDisplayableInWorkspace(),
+            'widgetIsDisplayableInDesktop' => $widget->isDisplayableInDesktop(),
+            'id' => $widgetInstance->getId(),
+            'name' => $widgetInstance->getName(),
+            'icon' => $widgetInstance->getIcon(),
+            'isAdmin' => $widgetInstance->isAdmin(),
+            'isDesktop' => $widgetInstance->isDesktop(),
+            'widgetHomeTabConfigId' => $widgetHomeTabConfig->getId(),
+            'order' => $widgetHomeTabConfig->getWidgetOrder(),
+            'type' => $widgetHomeTabConfig->getType(),
+            'visible' => $widgetHomeTabConfig->isVisible(),
+            'locked' => $widgetHomeTabConfig->isLocked()
+        );
+
+        return new JsonResponse($datas, 200);
+    }
+
+    /**
+     * @View(serializerGroups={"api_home_tab"})
+     * @ApiDoc(
+     *     description="Delete a widget",
+     *     views = {"desktop_home"}
+     * )
+     */
+    public function deleteDesktopWidgetHomeTabConfigAction(WidgetHomeTabConfig $widgetHomeTabConfig)
+    {
+        $this->checkWidgetHomeTabConfigEdition($widgetHomeTabConfig);
+        $homeTab = $widgetHomeTabConfig->getHomeTab();
+        $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
+        $widget = $widgetInstance->getWidget();
+        $datas = array(
+            'tabId' => $homeTab->getId(),
+            'tabName' => $homeTab->getName(),
+            'tabType' => $homeTab->getType(),
+            'tabIcon' => $homeTab->getIcon(),
+            'widgetId' => $widget->getId(),
+            'widgetName' => $widget->getName(),
+            'widgetIsConfigurable' => $widget->isConfigurable(),
+            'widgetIsExportable' => $widget->isExportable(),
+            'widgetIsDisplayableInWorkspace' => $widget->isDisplayableInWorkspace(),
+            'widgetIsDisplayableInDesktop' => $widget->isDisplayableInDesktop(),
+            'id' => $widgetInstance->getId(),
+            'name' => $widgetInstance->getName(),
+            'icon' => $widgetInstance->getIcon(),
+            'isAdmin' => $widgetInstance->isAdmin(),
+            'isDesktop' => $widgetInstance->isDesktop(),
+            'widgetHomeTabConfigId' => $widgetHomeTabConfig->getId(),
+            'order' => $widgetHomeTabConfig->getWidgetOrder(),
+            'type' => $widgetHomeTabConfig->getType(),
+            'visible' => $widgetHomeTabConfig->isVisible(),
+            'locked' => $widgetHomeTabConfig->isLocked()
+        );
+        $this->homeTabManager->deleteWidgetHomeTabConfig($widgetHomeTabConfig);
+
+        if ($this->hasUserAccessToWidgetInstance($widgetInstance)) {
+            $this->widgetManager->removeInstance($widgetInstance);
+        }
+        $event = new LogWidgetUserDeleteEvent($datas);
+        $this->eventDispatcher->dispatch('log', $event);
+
+        return new JsonResponse($datas, 200);
+    }
+
     private function checkHomeLocked()
     {
         $user = $this->tokenStorage->getToken()->getUser();
@@ -695,5 +793,24 @@ class DesktopHomeController extends FOSRestController
 
             throw new AccessDeniedException();
         }
+    }
+
+    private function checkWidgetHomeTabConfigEdition(WidgetHomeTabConfig $whtc)
+    {
+        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
+        $user = $whtc->getUser();
+
+        if ($authenticatedUser !== $user) {
+
+            throw new AccessDeniedException();
+        }
+    }
+
+    private function hasUserAccessToWidgetInstance(WidgetInstance $widgetInstance)
+    {
+        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
+        $user = $widgetInstance->getUser();
+
+        return $authenticatedUser === $user;
     }
 }

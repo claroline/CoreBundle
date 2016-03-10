@@ -547,10 +547,11 @@ class HomeTabManager
     }
 
     public function changeVisibilityWidgetHomeTabConfig(
-        WidgetHomeTabConfig $widgetHomeTabConfig
+        WidgetHomeTabConfig $widgetHomeTabConfig,
+        $visible = null
     )
     {
-        $isVisible = !$widgetHomeTabConfig->isVisible();
+        $isVisible = is_null($visible) ? !$widgetHomeTabConfig->isVisible() : $visible;
         $widgetHomeTabConfig->setVisible($isVisible);
         $this->om->flush();
     }

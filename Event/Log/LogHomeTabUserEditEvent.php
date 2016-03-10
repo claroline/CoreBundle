@@ -22,7 +22,6 @@ class LogHomeTabUserEditEvent extends LogGenericEvent
      */
     public function __construct(HomeTabConfig $htc)
     {
-        $user = $htc->getUser();
         $homeTab = $htc->getHomeTab();
         $details = array();
         $details['tabId'] = $homeTab->getId();
@@ -38,8 +37,7 @@ class LogHomeTabUserEditEvent extends LogGenericEvent
 
         parent::__construct(
             self::ACTION,
-            $details,
-            $user
+            $details
         );
     }
 

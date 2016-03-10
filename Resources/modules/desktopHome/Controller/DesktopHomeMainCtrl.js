@@ -22,12 +22,35 @@ export default class DesktopHomeMainCtrl {
         this.isHomeLocked = true
         this.selectedTabId = 0
         this.selectedTabIsLocked = true
-        
+        this.gridsterOptions = {
+            columns: 12,
+            floating: true,
+            resizable: {
+                enabled: false,
+                handles: ['e', 's', 'w', 'ne', 'se', 'sw', 'nw'],
+                start: (event, $element, widget) => {},
+                resize: (event, $element, widget) => {},
+                stop: (event, $element, widget) => {
+                    this._updateWidgetsDisplay()
+                }
+            },
+            draggable: {
+                enabled: false,
+                handle: '.widget-heading',
+                start: (event, $element, widget) => {},
+                drag: (event, $element, widget) => {},
+                stop: (event, $element, widget) => {
+                    this._updateWidgetsDisplay()
+                }
+            }
+        }
         this._addUserHomeTabCallback = this._addUserHomeTabCallback.bind(this)
         this._updateUserHomeTabCallback = this._updateUserHomeTabCallback.bind(this)
         this._removeAdminHomeTabCallback = this._removeAdminHomeTabCallback.bind(this)
         this._removeUserHomeTabCallback = this._removeUserHomeTabCallback.bind(this)
         this._removeWorkspaceHomeTabCallback = this._removeWorkspaceHomeTabCallback.bind(this)
+        this._updateWidgetsDisplay = this._updateWidgetsDisplay.bind(this)
+        this._removeWidgetCallback = this._removeWidgetCallback.bind(this)
         this.initialize()
     }
     
@@ -103,12 +126,31 @@ export default class DesktopHomeMainCtrl {
         }
     }
     
+    _updateWidgetsDisplay() {
+        console.log(this.widgets)
+    }
+    
+    _removeWidgetCallback(data) {
+        
+        if (data['id']) {
+        
+            for (let i = 0; i < this.widgets.length; i++) {
+
+                if (data['id'] === this.widgets[i]['instanceId']) {
+                    this.widgets.splice(i, 1)
+                    break
+                }
+            }
+        }
+    }
+    
     toggleEditionMode() {
         const route = Routing.generate('api_put_desktop_home_edition_mode_toggle')
         this.$http.put(route).then(datas => {
             
             if (datas['status'] === 200) {
                 this.editionMode = datas['data']
+                this.updateGristerEdition()
             }
         })
     }
@@ -243,15 +285,58 @@ export default class DesktopHomeMainCtrl {
                 if (datas['status'] === 200) {
                     this.selectedTabIsLocked = datas['data']['isLockedHomeTab']
                     this.widgets = datas['data']['widgets']
+                    this.updateGristerEdition()
                 }
             })  
         }
     }
     
-    createWidget(tabId) {
+    updateGristerEdition() {
+        const editable = !this.isHomeLocked && this.editionMode && !this.selectedTabIsLocked
+        this.gridsterOptions['resizable']['enabled'] = editable
+        this.gridsterOptions['draggable']['enabled'] = editable
+    }
+    
+    createUserWidget(tabId) {
         
         if (!this.isHomeLocked && this.editionMode) {
             console.log('Creating Widget... ' + tabId)
+        }
+    }
+    
+    deleteUserWidget($event, widgetHTCId) {
+        $event.stopPropagation()
+        
+        if (!this.isHomeLocked && this.editionMode) {
+            const url = Routing.generate(
+                'api_delete_desktop_widget_home_tab_config',
+                {widgetHomeTabConfig: widgetHTCId}
+            )
+
+            this.ClarolineAPIService.confirm(
+                {url, method: 'DELETE'},
+                this._removeWidgetCallback,
+                Translator.trans('widget_home_tab_delete_confirm_title', {}, 'platform'),
+                Translator.trans('widget_home_tab_delete_confirm_message', {}, 'platform')
+            )
+        }
+    }
+    
+    hideAdminWidget($event, widgetHTCId) {
+        $event.stopPropagation()
+        
+        if (!this.isHomeLocked && this.editionMode && !this.selectedTabIsLocked) {
+            const url = Routing.generate(
+                'api_put_desktop_widget_home_tab_config_visibility_change',
+                {widgetHomeTabConfig: widgetHTCId}
+            )
+
+            this.ClarolineAPIService.confirm(
+                {url, method: 'PUT'},
+                this._removeWidgetCallback,
+                Translator.trans('widget_home_tab_delete_confirm_title', {}, 'platform'),
+                Translator.trans('widget_home_tab_delete_confirm_message', {}, 'platform')
+            )
         }
     }
     
