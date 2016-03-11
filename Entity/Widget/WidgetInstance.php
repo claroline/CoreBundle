@@ -66,6 +66,11 @@ class WidgetInstance
      */
     protected $icon;
 
+    /**
+     * @ORM\Column(name="template", nullable=true)
+     */
+    protected $template;
+
 
     public function getId()
     {
@@ -153,5 +158,15 @@ class WidgetInstance
     public function setIcon($icon)
     {
         $this->icon = $icon;
+    }
+
+    function getTemplate()
+    {
+        return $this->template;
+    }
+
+    function setTemplate($template)
+    {
+        $this->template = $template;
     }
 }

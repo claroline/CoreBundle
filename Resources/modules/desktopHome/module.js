@@ -20,6 +20,7 @@ import DesktopHomeMainCtrl from './Controller/DesktopHomeMainCtrl'
 import HomeTabCreationModalCtrl from './Controller/HomeTabCreationModalCtrl'
 import HomeTabEditionModalCtrl from './Controller/HomeTabEditionModalCtrl'
 import ClaroDesktopHomeTabsDirective from './Directive/ClaroDesktopHomeTabsDirective'
+import WidgetInstanceCreationModalCtrl from '../widgets/Controller/WidgetInstanceCreationModalCtrl'
 import ClaroWidgetsDirective from '../widgets/Directive/ClaroWidgetsDirective'
 
 angular.module('DesktopHomeModule', [
@@ -35,5 +36,6 @@ angular.module('DesktopHomeModule', [
 .controller('HomeTabCreationModalCtrl', HomeTabCreationModalCtrl)
 .controller('HomeTabEditionModalCtrl', HomeTabEditionModalCtrl)
 .directive('claroDesktopHomeTabs', () => new ClaroDesktopHomeTabsDirective)
+.controller('WidgetInstanceCreationModalCtrl', WidgetInstanceCreationModalCtrl)
 .directive('claroWidgets', () => new ClaroWidgetsDirective)
 .config(Routing)

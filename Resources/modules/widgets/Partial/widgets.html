@@ -7,7 +7,7 @@
         >
             <div class="panel-heading widget-heading" style="background-color: {{ widget['color'] }}">
                 <h3 class="panel-title">
-                    <span>
+                    <span style="color: {{ widget['textTitleColor'] }}">
                        {{ widget['instanceName'] }}
                     </span>
                     <span class="pull-right" ng-if="!dhmc.isHomeLocked && dhmc.editionMode && !dhmc.selectedTabIsLocked && !widget['locked']">

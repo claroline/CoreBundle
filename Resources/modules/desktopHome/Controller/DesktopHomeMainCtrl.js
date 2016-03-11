@@ -18,10 +18,13 @@ export default class DesktopHomeMainCtrl {
         this.userHomeTabs = []
         this.workspaceHomeTabs = []
         this.widgets = []
+        this.widgetsDisplayOptions = {}
         this.editionMode = false
         this.isHomeLocked = true
         this.selectedTabId = 0
+        this.selectedTabConfigId = 0
         this.selectedTabIsLocked = true
+        this.widgetHasChanged = false
         this.gridsterOptions = {
             columns: 12,
             floating: true,
@@ -29,18 +32,30 @@ export default class DesktopHomeMainCtrl {
                 enabled: false,
                 handles: ['e', 's', 'w', 'ne', 'se', 'sw', 'nw'],
                 start: (event, $element, widget) => {},
-                resize: (event, $element, widget) => {},
+                resize: (event, $element, widget) => {
+                    this.widgetHasChanged = true
+                },
                 stop: (event, $element, widget) => {
-                    this._updateWidgetsDisplay()
+                    
+                    if (this.widgetHasChanged) {
+                        this.widgetHasChanged = false
+                        this._updateWidgetsDisplay()
+                    }
                 }
             },
             draggable: {
                 enabled: false,
                 handle: '.widget-heading',
                 start: (event, $element, widget) => {},
-                drag: (event, $element, widget) => {},
+                drag: (event, $element, widget) => {
+                    this.widgetHasChanged = true
+                },
                 stop: (event, $element, widget) => {
-                    this._updateWidgetsDisplay()
+                    
+                    if (this.widgetHasChanged) {
+                        this.widgetHasChanged = false
+                        this._updateWidgetsDisplay()
+                    }
                 }
             }
         }
@@ -49,6 +64,7 @@ export default class DesktopHomeMainCtrl {
         this._removeAdminHomeTabCallback = this._removeAdminHomeTabCallback.bind(this)
         this._removeUserHomeTabCallback = this._removeUserHomeTabCallback.bind(this)
         this._removeWorkspaceHomeTabCallback = this._removeWorkspaceHomeTabCallback.bind(this)
+        this._addUserWidgetCallback = this._addUserWidgetCallback.bind(this)
         this._updateWidgetsDisplay = this._updateWidgetsDisplay.bind(this)
         this._removeWidgetCallback = this._removeWidgetCallback.bind(this)
         this.initialize()
@@ -126,8 +142,22 @@ export default class DesktopHomeMainCtrl {
         }
     }
     
+    _addUserWidgetCallback(data) {
+        this.widgetsDisplayOptions[data['displayId']] = {
+            id: data['displayId'],
+            row: data['row'],
+            col: data['col'],
+            sizeX: data['sizeX'],
+            sizeY: data['sizeY']
+        }
+        this.widgets.push(data)
+        this.checkWidgetsDisplayOptions()
+        console.log(this.widgets[this.widgets.length - 1])
+        console.log(this.widgets[this.widgets.length - 1]['row'])
+    }
+    
     _updateWidgetsDisplay() {
-        console.log(this.widgets)
+        this.checkWidgetsDisplayOptions()
     }
     
     _removeWidgetCallback(data) {
@@ -141,6 +171,7 @@ export default class DesktopHomeMainCtrl {
                     break
                 }
             }
+            this.checkWidgetsDisplayOptions()
         }
     }
     
@@ -155,8 +186,9 @@ export default class DesktopHomeMainCtrl {
         })
     }
     
-    showTab(tabId) {
+    showTab(tabId, tabConfigId) {
         this.selectedTabId = tabId
+        this.selectedTabConfigId = tabConfigId
         this.loadWidgets(tabId)
     }
     
@@ -262,14 +294,18 @@ export default class DesktopHomeMainCtrl {
     
     selectDefaultHomeTab() {
         this.selectedTabId = 0
+        this.selectedTabConfigId = 0
         this.selectedTabIsLocked = true
         
         if (this.adminHomeTabs.length > 0) {
             this.selectedTabId = this.adminHomeTabs[0]['tabId']
+            this.selectedTabConfigId = this.adminHomeTabs[0]['configId']
         } else if (this.userHomeTabs.length > 0) {
             this.selectedTabId = this.userHomeTabs[0]['tabId']
+            this.selectedTabConfigId = this.userHomeTabs[0]['configId']
         } else if (this.workspaceHomeTabs.length > 0) {
             this.selectedTabId = this.workspaceHomeTabs[0]['tabId']
+            this.selectedTabConfigId = this.workspaceHomeTabs[0]['configId']
         }
         this.loadWidgets(this.selectedTabId)
     }
@@ -285,9 +321,74 @@ export default class DesktopHomeMainCtrl {
                 if (datas['status'] === 200) {
                     this.selectedTabIsLocked = datas['data']['isLockedHomeTab']
                     this.widgets = datas['data']['widgets']
+                    this.generateWidgetsDisplayOptions()
+                    this.checkWidgetsDisplayOptions()
                     this.updateGristerEdition()
                 }
             })  
+        }
+    }
+    
+    generateWidgetsDisplayOptions() {
+        
+        for (let i = 0; i < this.widgets.length; i++) {
+            const displayId = this.widgets[i]['displayId']
+            this.widgetsDisplayOptions[displayId] = {
+                id: this.widgets[i]['displayId'],
+                row: this.widgets[i]['row'],
+                col: this.widgets[i]['col'],
+                sizeX: this.widgets[i]['sizeX'],
+                sizeY: this.widgets[i]['sizeY']
+            }
+        }
+    }
+    
+    checkWidgetsDisplayOptions() {
+        let modifiedWidgets = []
+        
+        for (let i = 0; i < this.widgets.length; i++) {
+            const displayId = this.widgets[i]['displayId']
+            
+            if (this.widgets[i]['row'] !== this.widgetsDisplayOptions[displayId]['row'] ||
+                this.widgets[i]['col'] !== this.widgetsDisplayOptions[displayId]['col'] ||
+                this.widgets[i]['sizeX'] !== this.widgetsDisplayOptions[displayId]['sizeX'] ||
+                this.widgets[i]['sizeY'] !== this.widgetsDisplayOptions[displayId]['sizeY']) {
+            
+                const widgetDatas = {
+                    id: displayId,
+                    row: this.widgets[i]['row'],
+                    col: this.widgets[i]['col'],
+                    sizeX: this.widgets[i]['sizeX'],
+                    sizeY: this.widgets[i]['sizeY']
+                } 
+                modifiedWidgets.push(widgetDatas)
+            }
+        }
+        
+        if (modifiedWidgets.length > 0) {
+            console.log(modifiedWidgets)
+            const json = JSON.stringify(modifiedWidgets)
+            const route = Routing.generate('api_put_desktop_widget_display_update', {datas: json})
+            this.$http.put(route).then(
+                (datas) => {
+                    if (datas['status'] === 200) {
+                        const displayDatas = datas['data']
+                        
+                        for (let i = 0; i < displayDatas.length; i++) {
+                            const id = displayDatas[i]['id']
+                            this.widgetsDisplayOptions[id]['row'] = displayDatas[i]['row']
+                            this.widgetsDisplayOptions[id]['col'] = displayDatas[i]['col']
+                            this.widgetsDisplayOptions[id]['sizeX'] = displayDatas[i]['sizeX']
+                            this.widgetsDisplayOptions[id]['sizeY'] = displayDatas[i]['sizeY']
+                        }
+                    }
+                },
+                () => {
+                    console.log('error')
+                }
+            )
+        } else {
+            console.log('no modif')
         }
     }
     
@@ -297,10 +398,30 @@ export default class DesktopHomeMainCtrl {
         this.gridsterOptions['draggable']['enabled'] = editable
     }
     
-    createUserWidget(tabId) {
+    createUserWidget(tabConfigId) {
         
-        if (!this.isHomeLocked && this.editionMode) {
-            console.log('Creating Widget... ' + tabId)
+        if (!this.isHomeLocked && this.editionMode && !this.selectedTabIsLocked) {
+            const modal = this.$uibModal.open({
+                templateUrl: Routing.generate(
+                    'api_get_widget_instance_creation_form',
+                    {'_format': 'html', htc: tabConfigId}
+                ),
+                controller: 'WidgetInstanceCreationModalCtrl',
+                controllerAs: 'wfmc',
+                resolve: {
+                    homeTabConfigId: () => { return tabConfigId },
+                    callback: () => { return this._addUserWidgetCallback }
+                }
+            })
+
+            modal.result.then(result => {
+
+                if (!result) {
+                    return
+                } else {
+                    this._addUserWidgetCallback(result)
+                }
+            })
         }
     }
     

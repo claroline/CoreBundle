@@ -4,7 +4,7 @@
             class="home-tab"
             ng-class="(tab['tabId'] === dhmc.selectedTabId) ? 'active' : ''"
         >
-            <a href="#" ng-click="dhmc.showTab(tab['tabId'])">
+            <a href="#" ng-click="dhmc.showTab(tab['tabId'], tab['configId'])">
                 <span class="icon-bg" style="background-color: {{  tab['color']}}">
                 </span>
                 <span class="option-text">
@@ -25,7 +25,7 @@
             class="home-tab"
             ng-class="(tab['tabId'] === dhmc.selectedTabId) ? 'active' : ''"
         >
-            <a href="#" ng-click="dhmc.showTab(tab['tabId'])">
+            <a href="#" ng-click="dhmc.showTab(tab['tabId'], tab['configId'])">
                 <span class="icon-bg" style="background-color: {{  tab['color']}}">
                 </span>
                 <span class="option-text">
@@ -49,7 +49,7 @@
             class="home-tab"
             ng-class="(tab['tabId'] === dhmc.selectedTabId) ? 'active' : ''"
         >
-            <a href="#" ng-click="dhmc.showTab(tab['tabId'])">
+            <a href="#" ng-click="dhmc.showTab(tab['tabId'], tab['configId'])">
                 <span class="icon-bg" style="background-color: {{  tab['color']}}">
                 </span>
                 <span class="option-text">

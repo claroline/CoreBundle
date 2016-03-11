@@ -330,18 +330,21 @@ class WidgetManager
                 if (isset($mappedWHTCs[$id]) && isset($adminTab[$id])) {
                     $changed = false;
 
-                    if ($userTab[$id]->getColor() !== $adminTab[$id]->getColor()) {
+                    if ($userTab[$id]->getColor() !== $adminTab[$id]->getColor() ||
+                        $userTab[$id]->getDetails() !== $adminTab[$id]->getDetails()) {
+
                         $userTab[$id]->setColor($adminTab[$id]->getColor());
+                        $userTab[$id]->setDetails($adminTab[$id]->getDetails());
                         $changed = true;
                     }
 
-                    if ($mappedWHTCs[$id]->isLocked()) {
-                        $userTab[$id]->setRow($adminTab[$id]->getRow());
-                        $userTab[$id]->setColumn($adminTab[$id]->getColumn());
-                        $userTab[$id]->setWidth($adminTab[$id]->getWidth());
-                        $userTab[$id]->setHeight($adminTab[$id]->getHeight());
-                        $changed = true;
-                    }
+//                    if ($mappedWHTCs[$id]->isLocked()) {
+//                        $userTab[$id]->setRow($adminTab[$id]->getRow());
+//                        $userTab[$id]->setColumn($adminTab[$id]->getColumn());
+//                        $userTab[$id]->setWidth($adminTab[$id]->getWidth());
+//                        $userTab[$id]->setHeight($adminTab[$id]->getHeight());
+//                        $changed = true;
+//                    }
 
                     if ($changed) {
                         $this->om->persist($userTab[$id]);
@@ -357,6 +360,7 @@ class WidgetManager
                 $wdc->setWidth($adminTab[$id]->getWidth());
                 $wdc->setHeight($adminTab[$id]->getHeight());
                 $wdc->setColor($adminTab[$id]->getColor());
+                $wdc->setDetails($adminTab[$id]->getDetails());
                 $this->om->persist($wdc);
                 $results[$id] = $wdc;
             } else {
@@ -491,9 +495,14 @@ class WidgetManager
         $this->om->flush();
     }
 
-    /************************************
-     * Access to TeamRepository methods *
-     ************************************/
+    /***************************************************
+     * Access to WidgetDisplayConfigRepository methods *
+     ***************************************************/
+
+    public function getWidgetDisplayConfigById($id)
+    {
+        return $this->widgetDisplayConfigRepo->findOneById($id);
+    }
 
     public function getWidgetDisplayConfigsByUserAndWidgets(
         User $user,

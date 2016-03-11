@@ -87,6 +87,11 @@ class WidgetDisplayConfig
      */
     protected $color;
 
+    /**
+     * @ORM\Column(type="json_array", nullable=true)
+     */
+    protected $details;
+
     public function getId()
     {
         return $this->id;
@@ -175,5 +180,13 @@ class WidgetDisplayConfig
     public function setColor($color)
     {
         $this->color = $color;
+    }
+
+    function getDetails() {
+        return $this->details;
+    }
+
+    function setDetails($details) {
+        $this->details = $details;
     }
 }
