@@ -3,7 +3,7 @@
     "entry": {
       "user-management": "modules/users/module",
       "organization-management": "modules/organization/module",
-      "desktop-home": "modules/desktopHome/module"
+      "desktop-home": "modules/desktopHome/desktopHome"
     }
   }
 }

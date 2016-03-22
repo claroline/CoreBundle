@@ -26,6 +26,7 @@ class WidgetInstanceConfigType extends AngularType
     private $textTitleColor;
     private $forApi = false;
     private $ngAlias;
+    private $creationMode;
 
     public function __construct(
         $isDesktop = true,
@@ -33,7 +34,8 @@ class WidgetInstanceConfigType extends AngularType
         array $roles = array(),
         $color = null,
         $textTitleColor = null,
-        $ngAlias = 'wfmc'
+        $ngAlias = 'wfmc',
+        $creationMode = true
     )
     {
         $this->isDesktop = $isDesktop;
@@ -42,14 +44,11 @@ class WidgetInstanceConfigType extends AngularType
         $this->color = $color;
         $this->textTitleColor = $textTitleColor;
         $this->ngAlias = $ngAlias;
+        $this->creationMode = $creationMode;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $datas['is_desktop'] = $this->isDesktop;
-        $datas['with_role'] = $this->withRole;
-        $datas['roles'] = $this->roles;
-
         $builder->add(
             'name',
             'text',
@@ -58,40 +57,48 @@ class WidgetInstanceConfigType extends AngularType
                 'constraints' => new NotBlank()
             )
         );
-        $builder->add(
-            'widget',
-            'entity',
-            array(
-                'label' => 'type',
-                'class' => 'Claroline\CoreBundle\Entity\Widget\Widget',
-                'choice_translation_domain' => true,
-                'translation_domain' => 'widget',
-                'expanded' => false,
-                'multiple' => false,
-                'constraints' => new NotBlank(),
-                'query_builder' => function (WidgetRepository $widgetRepo) use ($datas) {
-                    if ($datas['is_desktop']) {
 
-                        if ($datas['with_role']) {
+        if ($this->creationMode) {
+            $datas = array();
+            $datas['is_desktop'] = $this->isDesktop;
+            $datas['with_role'] = $this->withRole;
+            $datas['roles'] = $this->roles;
 
-                            return $widgetRepo->createQueryBuilder('w')
-                                ->join('w.roles', 'r')
-                                ->where('w.isDisplayableInDesktop = true')
-                                ->andWhere("r IN (:roles)")
-                                ->setParameter('roles', $datas['roles']);
+            $builder->add(
+                'widget',
+                'entity',
+                array(
+                    'label' => 'type',
+                    'class' => 'Claroline\CoreBundle\Entity\Widget\Widget',
+                    'choice_translation_domain' => true,
+                    'translation_domain' => 'widget',
+                    'expanded' => false,
+                    'multiple' => false,
+                    'constraints' => new NotBlank(),
+                    'query_builder' => function (WidgetRepository $widgetRepo) use ($datas) {
+                        if ($datas['is_desktop']) {
 
+                            if ($datas['with_role']) {
+
+                                return $widgetRepo->createQueryBuilder('w')
+                                    ->join('w.roles', 'r')
+                                    ->where('w.isDisplayableInDesktop = true')
+                                    ->andWhere("r IN (:roles)")
+                                    ->setParameter('roles', $datas['roles']);
+
+                            } else {
+
+                                return $widgetRepo->createQueryBuilder('w')
+                                    ->where('w.isDisplayableInDesktop = true');
+                            }
                         } else {
-
                             return $widgetRepo->createQueryBuilder('w')
-                                ->where('w.isDisplayableInDesktop = true');
+                                ->where('w.isDisplayableInWorkspace = true');
                         }
-                    } else {
-                        return $widgetRepo->createQueryBuilder('w')
-                            ->where('w.isDisplayableInWorkspace = true');
                     }
-                }
-            )
-        );
+                )
+            );
+        }
         $builder->add(
             'color',
             'text',

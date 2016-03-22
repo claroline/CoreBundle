@@ -2,14 +2,14 @@
     <ul class="nav nav-tabs" role="tablist">
         <li ng-repeat="tab in dhmc.adminHomeTabs"
             class="home-tab"
-            ng-class="(tab['tabId'] === dhmc.selectedTabId) ? 'active' : ''"
+            ng-class="(tab['tabId'] === dhmc.homeTabsOptions['selectedTabId']) ? 'active' : ''"
         >
-            <a href="#" ng-click="dhmc.showTab(tab['tabId'], tab['configId'])">
+            <a href="#" ng-click="dhmc.showTab(tab['tabId'], tab['configId'], tab['locked'])">
                 <span class="icon-bg" style="background-color: {{  tab['color']}}">
                 </span>
                 <span class="option-text">
                     {{ tab['tabName'] }}
-                    <span ng-if="!dhmc.isHomeLocked && dhmc.editionMode">
+                    <span ng-if="dhmc.homeTabsOptions['canEdit']">
                         &nbsp;
                         <i class="fa fa-lock" ng-if="tab['locked']"></i>
                         <i class="fa fa-times pointer-hand text-muted"
@@ -23,14 +23,14 @@
         </li>
         <li ng-repeat="tab in dhmc.userHomeTabs"
             class="home-tab"
-            ng-class="(tab['tabId'] === dhmc.selectedTabId) ? 'active' : ''"
+            ng-class="(tab['tabId'] === dhmc.homeTabsOptions['selectedTabId']) ? 'active' : ''"
         >
-            <a href="#" ng-click="dhmc.showTab(tab['tabId'], tab['configId'])">
+            <a href="#" ng-click="dhmc.showTab(tab['tabId'], tab['configId'], false)">
                 <span class="icon-bg" style="background-color: {{  tab['color']}}">
                 </span>
                 <span class="option-text">
                     {{ tab['tabName'] }}
-                    <span ng-if="!dhmc.isHomeLocked && dhmc.editionMode">
+                    <span ng-if="dhmc.homeTabsOptions['canEdit']">
                         &nbsp;
                         <i class="fa fa-pencil pointer-hand text-muted"
                            ng-click="dhmc.editUserHomeTab($event, tab['tabId'])"
@@ -47,23 +47,23 @@
         </li>
         <li ng-repeat="tab in dhmc.workspaceHomeTabs"
             class="home-tab"
-            ng-class="(tab['tabId'] === dhmc.selectedTabId) ? 'active' : ''"
+            ng-class="(tab['tabId'] === dhmc.homeTabsOptions['selectedTabId']) ? 'active' : ''"
         >
-            <a href="#" ng-click="dhmc.showTab(tab['tabId'], tab['configId'])">
+            <a href="#" ng-click="dhmc.showTab(tab['tabId'], tab['configId'], true)">
                 <span class="icon-bg" style="background-color: {{  tab['color']}}">
                 </span>
                 <span class="option-text">
                     {{ tab['tabName'] }}
                     &nbsp;
                     <i class="fa fa-thumb-tack pointer-hand text-muted"
-                       ng-click="(dhmc.isHomeLocked || dhmc.editionMode) && dhmc.deletePinnedWorkspaceHomeTab($event, tab['configId'])"
+                       ng-click="dhmc.deletePinnedWorkspaceHomeTab($event, tab['configId'])"
                     >
                     </i>
                 </span>
             </a>
         </li>
 
-        <li class="new-home-tab" ng-if="!dhmc.isHomeLocked && dhmc.editionMode">
+        <li class="new-home-tab" ng-if="dhmc.homeTabsOptions['canEdit']">
             <a href="#"
                class="pointer-hand"
                ng-click="dhmc.createUserHomeTab()"

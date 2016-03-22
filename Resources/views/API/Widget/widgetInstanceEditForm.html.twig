@@ -1,7 +1,7 @@
 {% extends "ClarolineCoreBundle:API:modal.html.twig" %}
 
 {% block header %}
-    {{ 'create_widget_instance'|trans({}, 'platform') }}
+    {{ 'widget_configuration'|trans({}, 'platform') }}
 {% endblock %}
 
 {% block form %}
@@ -9,7 +9,7 @@
     <form role="form"
           class="form-horizontal"
           ng-submit="wfmc.submit($scope)"
-          method="post"
+          method="put"
           {{ form_enctype(form) }}
           novalidate
           autocomplete="off"

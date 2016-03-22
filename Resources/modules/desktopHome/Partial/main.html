@@ -3,13 +3,13 @@
     <i class="fa fa-lock" ng-if="!dhmc.editionMode" ng-click="dhmc.toggleEditionMode()"></i>
 </span>
 
-<claro-desktop-home-tabs></claro-desktop-home-tabs>
+<home-tabs></home-tabs>
 <br>
-<claro-widgets></claro-widgets>
+<widgets></widgets>
 
-<div ng-if="!dhmc.isHomeLocked && dhmc.editionMode && dhmc.selectedTabId && !dhmc.selectedTabIsLocked">
+<div ng-if="!dhmc.isHomeTabLocked && dhmc.editionMode && dhmc.homeTabsOptions['selectedTabId'] && !dhmc.homeTabsOptions['selectedTabIsLocked']">
     <hr>
-    <span class="btn btn-primary" ng-click="dhmc.createUserWidget(dhmc.selectedTabConfigId)">
+    <span class="btn btn-primary" ng-click="dhmc.createUserWidget(dhmc.homeTabsOptions['selectedTabConfigId'])">
         <i class="fa fa-plus-circle">
         </i>
         {{ 'add_widget_to_home_tab'|trans:{}:'platform' }}

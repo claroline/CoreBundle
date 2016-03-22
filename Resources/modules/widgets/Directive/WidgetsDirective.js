@@ -7,11 +7,11 @@
  * file that was distributed with this source code.
  */
 
-export default class ClaroDesktopHomeTabsDirective {  
+export default class WidgetsDirective {
 
     constructor() {
         this.restrict = 'E'
         this.replace = true
-        this.template = require('../Partial/desktop_home_tabs.html')
+        this.template = require('../Partial/widgets.html')
     }
 }

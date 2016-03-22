@@ -109,6 +109,31 @@ class DesktopHomeController extends FOSRestController
     /**
      * @View(serializerGroups={"api_home_tab"})
      * @ApiDoc(
+     *     description="Returns desktop options",
+     *     views = {"desktop_home"}
+     * )
+     */
+    public function getDesktopOptionsAction()
+    {
+        $token = $this->tokenStorage->getToken();
+        $user = $token->getUser();
+
+        if ($user === '.anon') {
+
+            throw new AccessDeniedException();
+        } else {
+            $options = $this->userManager->getUserOptions($user);
+            $desktopOptions = array();
+            $desktopOptions['editionMode'] = $options->getDesktopMode() === 1;
+            $desktopOptions['isHomeLocked'] = $this->roleManager->isHomeLocked($user);
+
+            return $desktopOptions;
+        }
+    }
+
+    /**
+     * @View(serializerGroups={"api_home_tab"})
+     * @ApiDoc(
      *     description="Returns list of desktop home tabs",
      *     views = {"desktop_home"}
      * )
@@ -238,7 +263,13 @@ class DesktopHomeController extends FOSRestController
                 $adminConfigs = $this->homeTabManager->getAdminWidgetConfigs($homeTab);
 
                 if ($isLockedHomeTab || $isHomeLocked) {
-                    $configs = $adminConfigs;
+
+                    foreach ($adminConfigs as $adminConfig) {
+
+                        if ($adminConfig->isVisible()) {
+                            $configs[] = $adminConfig;
+                        }
+                    }
                 } else {
                     $userWidgetsConfigs = $this->homeTabManager
                         ->getWidgetConfigsByUser($homeTab, $user);
@@ -319,11 +350,11 @@ class DesktopHomeController extends FOSRestController
                 $widgetDatas['widgetId'] = $widget->getId();
                 $widgetDatas['widgetName'] = $widget->getName();
                 $widgetDatas['configId'] = $config->getId();
-//                $eventName = 'widget_' . $config->getWidgetInstance()->getWidget()->getName();
-//                $event = $this->eventDispatcher->dispatch(
-//                    $eventName,
-//                    new \Claroline\CoreBundle\Event\DisplayWidgetEvent($widgetInstance)
-//                );
+                $eventName = 'widget_' . $config->getWidgetInstance()->getWidget()->getName();
+                $event = $this->eventDispatcher->dispatch(
+                    $eventName,
+                    new \Claroline\CoreBundle\Event\DisplayWidgetEvent($widgetInstance)
+                );
 //                $event = $this->eventStrictDispatcher->dispatch(
 //                    "widget_{$config->getWidgetInstance()->getWidget()->getName()}",
 //                    'DisplayWidget',
@@ -332,7 +363,7 @@ class DesktopHomeController extends FOSRestController
 //                throw new \Exception(var_dump($event));
 //
 ////                $widget['config'] = $config;
-//                $widget['content'] = $event->getContent();
+                $widgetDatas['content'] = $event->getContent();
                 $widgetDatas['configurable'] = $config->isLocked() !== true
                     && $config->getWidgetInstance()->getWidget()->isConfigurable();
                 $widgetDatas['locked'] = $config->isLocked();
@@ -437,12 +468,12 @@ class DesktopHomeController extends FOSRestController
     /**
      * @View()
      * @ApiDoc(
-     *     description="Creates a home tab",
+     *     description="Creates a desktop home tab",
      *     views = {"desktop_home"},
      *     input="Claroline\CoreBundle\Form\HomeTabType"
      * )
      */
-    public function postHomeTabCreationAction()
+    public function postDesktopHomeTabCreationAction()
     {
         $this->checkHomeLocked();
         $user = $this->tokenStorage->getToken()->getUser();
@@ -708,11 +739,49 @@ class DesktopHomeController extends FOSRestController
     /**
      * @View(serializerGroups={"api_home_tab"})
      * @ApiDoc(
+     *     description="Returns the widget instance edition form",
+     *     views = {"desktop_home"}
+     * )
+     */
+    public function getWidgetInstanceEditionFormAction(WidgetDisplayConfig $wdc)
+    {
+        $this->checkWidgetDisplayConfigEdition($wdc);
+        $widgetInstance = $wdc->getWidgetInstance();
+        $this->checkWidgetInstanceEdition($widgetInstance);
+        $color = $wdc->getColor();
+        $details = $wdc->getDetails();
+        $textTitleColor = isset($details['textTitleColor']) ? $details['textTitleColor'] : null;
+        $formType = new WidgetInstanceConfigType(true, false, array(), $color, $textTitleColor, 'wfmc', false);
+        $formType->enableApi();
+        $form = $this->createForm($formType, $widgetInstance);
+
+//        $widget = $widgetInstance->getWidget();
+//
+//        if ($widget->isConfigurable()) {
+//            $event = $this->get('claroline.event.event_dispatcher')->dispatch(
+//                "widget_{$widgetInstance->getWidget()->getName()}_configuration",
+//                'ConfigureWidget',
+//                array($widgetInstance)
+//            );
+//            $content = $event->getContent();
+//        } else {
+//            $content = array();
+//        }
+
+        return $this->apiManager->handleFormView(
+            'ClarolineCoreBundle:API:Widget\widgetInstanceEditForm.html.twig',
+            $form
+        );
+    }
+
+    /**
+     * @View(serializerGroups={"api_home_tab"})
+     * @ApiDoc(
      *     description="Creates a new widget instance",
      *     views = {"desktop_home"}
      * )
      */
-    public function postWidgetInstanceCreationAction(HomeTabConfig $htc)
+    public function postDesktopWidgetInstanceCreationAction(HomeTabConfig $htc)
     {
         $this->checkWidgetCreation($htc);
         $user = $this->tokenStorage->getToken()->getUser();
@@ -787,6 +856,77 @@ class DesktopHomeController extends FOSRestController
 
             return $this->apiManager->handleFormView(
                 'ClarolineCoreBundle:API:Widget\widgetInstanceCreateForm.html.twig',
+                $form,
+                $options
+            );
+        }
+    }
+
+    /**
+     * @View(serializerGroups={"api_home_tab"})
+     * @ApiDoc(
+     *     description="Edit widget instance config",
+     *     views = {"desktop_home"}
+     * )
+     */
+    public function putWidgetInstanceEditionAction(WidgetDisplayConfig $wdc)
+    {
+        $this->checkWidgetDisplayConfigEdition($wdc);
+        $widgetInstance = $wdc->getWidgetInstance();
+        $this->checkWidgetInstanceEdition($widgetInstance);
+        $color = $wdc->getColor();
+        $details = $wdc->getDetails();
+        $textTitleColor = isset($details['textTitleColor']) ? $details['textTitleColor'] : null;
+        $formType = new WidgetInstanceConfigType(true, false, array(), $color, $textTitleColor, 'wfmc', false);
+        $formType->enableApi();
+        $form = $this->createForm($formType, $widgetInstance);
+        $form->submit($this->request);
+
+        if ($form->isValid()) {
+            $instance = $form->getData();
+            $name = $instance->getName();
+            $color = $form->get('color')->getData();
+            $textTitleColor = $form->get('textTitleColor')->getData();
+            $widgetInstance->setName($name);
+            $wdc->setColor($color);
+            $details = $wdc->getDetails();
+
+            if (is_null($details)) {
+                $details = array();
+            }
+            $details['textTitleColor'] = $textTitleColor;
+            $wdc->setDetails($details);
+
+            $this->widgetManager->persistWidgetConfigs($widgetInstance, null, $wdc);
+            $event = new LogWidgetUserEditEvent($widgetInstance, null, $wdc);
+            $this->eventDispatcher->dispatch('log', $event);
+            $widget = $widgetInstance->getWidget();
+
+            $widgetDatas = array(
+                'widgetId' => $widget->getId(),
+                'widgetName' => $widget->getName(),
+                'instanceId' => $widgetInstance->getId(),
+                'instanceName' => $widgetInstance->getName(),
+                'instanceIcon' => $widgetInstance->getIcon(),
+                'displayId' => $wdc->getId(),
+                'row' => null,
+                'col' => null,
+                'sizeY' => $wdc->getHeight(),
+                'sizeX' => $wdc->getWidth(),
+                'color' => $color,
+                'textTitleColor' => $textTitleColor
+            );
+
+            return new JsonResponse($widgetDatas, 200);
+        } else {
+            $options = array(
+                'http_code' => 400,
+                'extra_parameters' => null,
+                'serializer_group' => 'api_widget'
+            );
+
+            return $this->apiManager->handleFormView(
+                'ClarolineCoreBundle:API:Widget\widgetInstanceEditForm.html.twig',
                 $form,
                 $options
             );
@@ -957,6 +1097,17 @@ class DesktopHomeController extends FOSRestController
     {
         $authenticatedUser = $this->tokenStorage->getToken()->getUser();
         $user = $wdc->getUser();
+
+        if ($authenticatedUser !== $user) {
+
+            throw new AccessDeniedException();
+        }
+    }
+
+    private function checkWidgetInstanceEdition(WidgetInstance $widgetInstance)
+    {
+        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
+        $user = $widgetInstance->getUser();
 
         if ($authenticatedUser !== $user) {
 

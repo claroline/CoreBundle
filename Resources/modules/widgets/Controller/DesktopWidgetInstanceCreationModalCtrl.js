@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-export default class WidgetInstanceCreationModalCtrl {
+export default class DesktopWidgetInstanceCreationModalCtrl {
     constructor($http, $uibModal, $uibModalInstance, ClarolineAPIService, homeTabConfigId, callback) {
         this.$http = $http
         this.$uibModal = $uibModal
@@ -24,7 +24,7 @@ export default class WidgetInstanceCreationModalCtrl {
             this.widgetInstance
         )
         const route = Routing.generate(
-            'api_post_widget_instance_creation',
+            'api_post_desktop_widget_instance_creation',
             {'_format': 'html', htc: this.homeTabConfigId}
         )
         const headers = {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
@@ -38,7 +38,7 @@ export default class WidgetInstanceCreationModalCtrl {
                     this.$uibModalInstance.close()
                     const instance = this.$uibModal.open({
                         template: d.data,
-                        controller: 'WidgetInstanceCreationModalCtrl',
+                        controller: 'DesktopWidgetInstanceCreationModalCtrl',
                         controllerAs: 'wfmc',
                         bindToController: true,
                         resolve: {

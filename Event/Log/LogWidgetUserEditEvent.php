@@ -14,6 +14,7 @@ namespace Claroline\CoreBundle\Event\Log;
 use Claroline\CoreBundle\Entity\Home\HomeTab;
 use Claroline\CoreBundle\Entity\Widget\WidgetDisplayConfig;
 use Claroline\CoreBundle\Entity\Widget\WidgetHomeTabConfig;
+use Claroline\CoreBundle\Entity\Widget\WidgetInstance;
 
 class LogWidgetUserEditEvent extends LogGenericEvent
 {
@@ -22,15 +23,18 @@ class LogWidgetUserEditEvent extends LogGenericEvent
     /**
      * Constructor.
      */
-    public function __construct(HomeTab $homeTab, WidgetHomeTabConfig $whtc, WidgetDisplayConfig $wdc = null)
+    public function __construct(WidgetInstance $widgetInstance, WidgetHomeTabConfig $whtc = null, WidgetDisplayConfig $wdc = null)
     {
-        $widgetInstance = $whtc->getWidgetInstance();
         $widget = $widgetInstance->getWidget();
+        $homeTab = !is_null($whtc) ? $whtc->getHomeTab() : null;
         $details = array();
-        $details['tabId'] = $homeTab->getId();
-        $details['tabName'] = $homeTab->getName();
-        $details['tabType'] = $homeTab->getType();
-        $details['tabIcon'] = $homeTab->getIcon();
+
+        if (!is_null($homeTab)) {
+            $details['tabId'] = $homeTab->getId();
+            $details['tabName'] = $homeTab->getName();
+            $details['tabType'] = $homeTab->getType();
+            $details['tabIcon'] = $homeTab->getIcon();
+        }
         $details['widgetId'] = $widget->getId();
         $details['widgetName'] = $widget->getName();
         $details['widgetIsConfigurable'] = $widget->isConfigurable();
@@ -42,11 +46,14 @@ class LogWidgetUserEditEvent extends LogGenericEvent
         $details['icon'] = $widgetInstance->getIcon();
         $details['isAdmin'] = $widgetInstance->isAdmin();
         $details['isDesktop'] = $widgetInstance->isDesktop();
-        $details['widgetHomeTabConfigId'] = $whtc->getId();
-        $details['order'] = $whtc->getWidgetOrder();
-        $details['type'] = $whtc->getType();
-        $details['visible'] = $whtc->isVisible();
-        $details['locked'] = $whtc->isLocked();
+
+        if (!is_null($whtc)) {
+            $details['widgetHomeTabConfigId'] = $whtc->getId();
+            $details['order'] = $whtc->getWidgetOrder();
+            $details['type'] = $whtc->getType();
+            $details['visible'] = $whtc->isVisible();
+            $details['locked'] = $whtc->isLocked();
+        }
 
         if (!is_null($wdc)) {
             $details['widgetDisplayConfigId'] = $wdc->getId();
