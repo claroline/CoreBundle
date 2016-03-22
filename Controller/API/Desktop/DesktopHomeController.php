@@ -155,9 +155,7 @@ class DesktopHomeController extends FOSRestController
             );
             $desktopHomeDatas['editionMode'] = $options->getDesktopMode() === 1;
             $desktopHomeDatas['isHomeLocked'] = $this->roleManager->isHomeLocked($user);
-            $visibleAdminHomeTabConfigs = array();
             $userHomeTabConfigs = array();
-            $workspaceUserHTCs = array();
             $roleNames = $this->utils->getRoles($token);
 
             if ($desktopHomeDatas['isHomeLocked']) {
