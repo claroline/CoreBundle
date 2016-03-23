@@ -348,20 +348,23 @@ class DesktopHomeController extends FOSRestController
                 $widgetDatas['widgetId'] = $widget->getId();
                 $widgetDatas['widgetName'] = $widget->getName();
                 $widgetDatas['configId'] = $config->getId();
-                $eventName = 'widget_' . $config->getWidgetInstance()->getWidget()->getName();
-                $event = $this->eventDispatcher->dispatch(
-                    $eventName,
-                    new \Claroline\CoreBundle\Event\DisplayWidgetEvent($widgetInstance)
-                );
+
+                // TODO
+                // Retrieve widget content
+
+//                $eventName = 'widget_' . $config->getWidgetInstance()->getWidget()->getName();
+//                $event = $this->eventDispatcher->dispatch(
+//                    $eventName,
+//                    new \Claroline\CoreBundle\Event\DisplayWidgetEvent($widgetInstance)
+//                );
+
 //                $event = $this->eventStrictDispatcher->dispatch(
 //                    "widget_{$config->getWidgetInstance()->getWidget()->getName()}",
 //                    'DisplayWidget',
 //                    array($config->getWidgetInstance())
 //                );
-//                throw new \Exception(var_dump($event));
-//
-////                $widget['config'] = $config;
-                $widgetDatas['content'] = $event->getContent();
+
+//                $widgetDatas['content'] = $event->getContent();
                 $widgetDatas['configurable'] = $config->isLocked() !== true
                     && $config->getWidgetInstance()->getWidget()->isConfigurable();
                 $widgetDatas['locked'] = $config->isLocked();
