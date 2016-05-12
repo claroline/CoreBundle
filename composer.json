@@ -60,7 +60,8 @@
         "white-october/pagerfanta-bundle": "1.0.2",
         "willdurand/js-translation-bundle": "~2.1",
         "zendframework/zend-crypt": "~2.3",
-        "zenstruck/form-bundle": "1.5.1"
+        "zenstruck/form-bundle": "1.5.1",
+        "composer/composer": "1.0.0-beta1"
     },
     "autoload": {
         "psr-4": { "Claroline\\CoreBundle\\": "" }
